@@ -119,6 +119,8 @@ class scorm_basic_report extends scorm_default_report {
             }
             $columns[]= 'fullname';
             $headers[]= get_string('name');
+            $columns[]= 'username';
+            $headers[]= get_string('username');
             $extrafields = get_extra_user_fields($coursecontext);
             foreach ($extrafields as $field) {
                 $columns[] = $field;
@@ -273,7 +275,7 @@ class scorm_basic_report extends scorm_default_report {
                             // Construct the SQL
             $select = 'SELECT DISTINCT '.$DB->sql_concat('u.id', '\'#\'', 'COALESCE(st.attempt, 0)').' AS uniqueid, ';
             $select .= 'st.scormid AS scormid, st.attempt AS attempt, ' .
-                    'u.id AS userid, u.idnumber, u.firstname, u.lastname, u.picture, u.imagealt, u.email' .
+                    'u.id AS userid, u.username, u.idnumber, u.firstname, u.lastname, u.picture, u.imagealt, u.email' .
                     get_extra_user_fields_sql($coursecontext, 'u', '', array('idnumber')) . ' ';
 
             // This part is the same for all cases - join users and scorm_scoes_track tables
@@ -394,6 +396,7 @@ class scorm_basic_report extends scorm_default_report {
                     } else {
                         $row[] = fullname($scouser);
                     }
+                    $row[] = $scouser->username;
                     foreach ($extrafields as $field) {
                         $row[] = s($scouser->{$field});
                     }

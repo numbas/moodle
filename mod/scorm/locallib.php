@@ -787,7 +787,7 @@ function scorm_view_display ($user, $scorm, $action, $cm) {
     $attemptcount = scorm_get_attempt_count($user->id, $scorm);
 
     // do not give the player launch FORM if the SCORM object is locked after the final attempt
-    if ($scorm->lastattemptlock == 0 || $result->attemptleft > 0) {
+    if ($scorm->lastattemptlock == 0 || $result->attemptleft > 0 || $result->incomplete) {
         ?>
             <div class="scorm-center">
                <form id="scormviewform" method="post" action="<?php echo $CFG->wwwroot ?>/mod/scorm/player.php">
@@ -1087,30 +1087,31 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
             break;
         }
     }
-
-    if (!empty($attempts)) {
-        $i = 1;
-        foreach ($attempts as $attempt) {
-            $gradereported = scorm_grade_user_attempt($scorm, $user->id, $attempt->attemptnumber);
-            if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-                $gradereported = $gradereported/$scorm->maxgrade;
-                $gradereported = number_format($gradereported*100, 0) .'%';
-            }
-            $result .= get_string('gradeforattempt', 'scorm').' ' . $i . ': ' . $gradereported .'<br />';
-            $i++;
-        }
-    }
+    // AJY: Don't show attempt scores on the summary page
+    //if (!empty($attempts)) {
+    //    $i = 1;
+    //    foreach ($attempts as $attempt) {
+    //        $gradereported = scorm_grade_user_attempt($scorm, $user->id, $attempt->attemptnumber);
+    //        if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
+    //            $gradereported = $gradereported/$scorm->maxgrade;
+    //            $gradereported = number_format($gradereported*100, 0) .'%';
+    //        }
+    //        $result .= get_string('gradeforattempt', 'scorm').' ' . $i . ': ' . $gradereported .'<br />';
+    //        $i++;
+    //    }
+    //}
     $calculatedgrade = scorm_grade_user($scorm, $user->id);
     if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
         $calculatedgrade = $calculatedgrade/$scorm->maxgrade;
         $calculatedgrade = number_format($calculatedgrade*100, 0) .'%';
     }
-    $result .= get_string('grademethod', 'scorm'). ': ' . $grademethod;
-    if (empty($attempts)) {
-        $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . get_string('none') . '<br />';
-    } else {
-        $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . $calculatedgrade . '<br />';
-    }
+    // AJY: Don't show the grading method or the reported grade on the summary page.
+    //$result .= get_string('grademethod', 'scorm'). ': ' . $grademethod;
+    //if (empty($attempts)) {
+    //    $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . get_string('none') . '<br />';
+    //} else {
+    //    $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . $calculatedgrade . '<br />';
+    //}
     $result .= '</p>';
     if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
         $result .= '<p><font color="#cc0000">'.get_string('exceededmaxattempts', 'scorm').'</font></p>';
