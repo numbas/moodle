@@ -257,6 +257,15 @@ class auth_plugin_ldap extends auth_plugin_base {
         }
 
         $this->ldap_close();
+        // AJY: There's no way of setting default values for attributes if they 
+        // are not set in LDAP.  This sets some default values if they're 
+        // empty, otherwise users are asked to edit their profile at first 
+        // login.
+        if (empty($result['country'])) $result['country'] = 'GB';
+        if (empty($result['city'])) $result['city'] = 'Newcastle upon Tyne';
+        if (empty($result['email'])) $result['email'] = 'noemail@nowhere.com';
+        if (empty($result['firstname'])) $result['firstname'] = 'DEFAULT';
+        if (empty($result['lastname'])) $result['lastname'] = 'DEFAULT';
         return $result;
     }
 
