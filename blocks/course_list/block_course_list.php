@@ -47,6 +47,16 @@ class block_course_list extends block_list {
                     $this->content->footer = "<a href=\"$CFG->wwwroot/course/index.php\">".get_string("fulllistofcourses")."</a> ...";
                 }
             }
+            /**
+            AJY: Had to add this else clause to stop all categories being
+            shown when a user is not enrolled in any courses.  Totally ignores 
+            the fact that a user could be enrolled on remote courses, but that 
+            won't happen at Newcastle.
+            */
+            else {
+              $this->content->items[] = '<p>Not enrolled on any courses.</p>';
+              return $this->content;
+            }
             $this->get_remote_courses();
             if ($this->content->items) { // make sure we don't return an empty list
                 return $this->content;
