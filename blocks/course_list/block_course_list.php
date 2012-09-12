@@ -54,7 +54,7 @@ class block_course_list extends block_list {
             won't happen at Newcastle.
             */
             else {
-              $this->content->items[] = '<p>Not enrolled on any courses.</p>';
+              $this->content->items[] = '<p>Not enrolled on any modules.</p>';
               return $this->content;
             }
             $this->get_remote_courses();
