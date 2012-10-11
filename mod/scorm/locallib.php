@@ -1113,9 +1113,12 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
     //    $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . $calculatedgrade . '<br />';
     //}
     $result .= '</p>';
-    if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
-        $result .= '<p><font color="#cc0000">'.get_string('exceededmaxattempts', 'scorm').'</font></p>';
-    }
+    /* AJY: Don't want to show this message if there's still an incomplete 
+      attempt, but can't figure out how to get the last attempt status from 
+      within this function.*/
+    //if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
+    //    $result .= '<p><font color="#cc0000">'.get_string('exceededmaxattempts', 'scorm').'</font></p>';
+    //}
     if (!empty($cm)) {
         $context = context_module::instance($cm->id);
         if (has_capability('mod/scorm:deleteownresponses', $context) &&
