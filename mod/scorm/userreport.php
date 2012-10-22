@@ -226,11 +226,12 @@ if (!empty($b)) {
             get_string('identifier', 'scorm'),
             get_string('type', 'scorm'),
             get_string('result', 'scorm'),
-            get_string('student_response', 'scorm'));
-    $table->align = array('center', 'center', 'center', 'center');
-    $table->wrap = array('nowrap', 'nowrap', 'nowrap', 'nowrap');
+            get_string('student_response', 'scorm'),
+            get_string('interactionspattern', 'scorm'));
+    $table->align = array('center', 'center', 'center', 'center', 'center');
+    $table->wrap = array('nowrap', 'nowrap', 'nowrap', 'nowrap', 'nowrap');
     $table->width = '100%';
-    $table->size = array('*', '*', '*', '*', '*');
+    $table->size = array('*', '*', '*', '*', '*', '*');
     $existinteraction = false;
     $i = 0;
     $interactionid = 'cmi.interactions.'.$i.'.id';
@@ -242,7 +243,8 @@ if (!empty($b)) {
                 $interactionid,
                 'cmi.interactions.'.$i.'.type',
                 'cmi.interactions.'.$i.'.result',
-                'cmi.interactions.'.$i.'.learner_response');
+                'cmi.interactions.'.$i.'.learner_response',
+                'cmi.interactions.'.$i.'.correct_responses.0.pattern');
         $row = array();
         foreach ($elements as $element) {
             if (isset($trackdata->$element)) {
