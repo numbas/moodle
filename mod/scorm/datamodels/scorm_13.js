@@ -75,9 +75,9 @@ function SCORMapi1_3(def, cmiobj, cmiint, cmicommentsuser, cmicommentslms, scorm
     var CMITimespan = '^P(\\d+Y)?(\\d+M)?(\\d+D)?(T(((\\d+H)(\\d+M)?(\\d+(\.\\d{1,2})?S)?)|((\\d+M)(\\d+(\.\\d{1,2})?S)?)|((\\d+(\.\\d{1,2})?S))))?$';
     var CMIInteger = '^\\d+$';
     var CMISInteger = '^-?([0-9]+)$';
-    var CMIDecimal = '^-?([0-9]{1,5})(\\.[0-9]{1,18})?$';
+    var CMIDecimal = '^-?([0-9]+)(\\.[0-9]+)?$';
     var CMIIdentifier = '^\\S{1,250}[a-zA-Z0-9]$';
-    var CMIShortIdentifier = '^[\\w\.]{1,250}$';
+    var CMIShortIdentifier = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?';
     var CMILongIdentifier = '^(?:(?!urn:)\\S{1,4000}|urn:[A-Za-z0-9-]{1,31}:\\S{1,4000})$';
     var CMIFeedback = '^.*$'; // This must be redefined
     var CMIIndex = '[._](\\d+).';
