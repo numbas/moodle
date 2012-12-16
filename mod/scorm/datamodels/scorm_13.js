@@ -755,6 +755,9 @@ function SCORMapi1_3(def, cmiobj, cmiint, cmicommentsuser, cmicommentslms, scorm
                                     value = value * 1.0;
                                     if (value >= ranges[0]) {
                                         if ((ranges[1] == '*') || (value <= ranges[1])) {
+                                            if(eval(element)!=value) {
+                                                dirtyElements[element] = value;
+                                            }
                                             eval(element + '=value;');
                                             errorCode = "0";
                                             if (scormdebugging) {
@@ -768,6 +771,9 @@ function SCORMapi1_3(def, cmiobj, cmiint, cmicommentsuser, cmicommentslms, scorm
                                         errorCode = '407';
                                     }
                                 } else {
+                                    if(eval(element)!=value) {
+                                        dirtyElements[element] = value;
+                                    }
                                     eval(element + '=value;');
                                     errorCode = "0";
                                     if (scormdebugging) {
@@ -1173,26 +1179,8 @@ function SCORMapi1_3(def, cmiobj, cmiint, cmicommentsuser, cmicommentslms, scorm
 
     function CollectData(data,parent) {
         var datastring = '';
-        for (property in data) {
-            if (typeof data[property] == 'object') {
-                datastring += CollectData(data[property],parent + '.' + property);
-            } else {
-                var element = parent + '.' + property;
-                var expression = new RegExp(CMIIndexStore,'g');
-                var elementmodel = String(element).replace(expression,'.n.');
-                if ((typeof eval('datamodel["' + scoid + '"]["' + elementmodel + '"]')) != "undefined") {
-                    if (eval('datamodel["' + scoid + '"]["' + elementmodel + '"].mod') != 'r') {
-                        var elementstring = '&' + underscore(element) + '=' + encodeURIComponent(data[property]);
-                        if ((typeof eval('datamodel["' + scoid + '"]["' + elementmodel + '"].defaultvalue')) != "undefined") {
-                            if (eval('datamodel["' + scoid + '"]["' + elementmodel + '"].defaultvalue') != data[property] || eval('typeof(datamodel["' + scoid + '"]["' + elementmodel + '"].defaultvalue)') != typeof(data[property])) {
-                                datastring += elementstring;
-                            }
-                        } else {
-                            datastring += elementstring;
-                        }
-                    }
-                }
-            }
+        for (property in dirtyElements) {
+            datastring += '&'+underscore(property)+'='+encodeURIComponent(dirtyElements[property]);
         }
         return datastring;
     }
@@ -1231,6 +1219,9 @@ function SCORMapi1_3(def, cmiobj, cmiint, cmicommentsuser, cmicommentslms, scorm
         var results = String(result).split('\n');
         if ((results.length > 2) && (navrequest != '')) {
             eval(results[2]);
+        }
+        if(results[0]=='true') {
+            dirtyElements = {};
         }
         errorCode = results[1];
         return results[0];
