@@ -1196,14 +1196,8 @@ function get_scorm_default (&$userdata, $scorm, $scoid, $attempt, $mode) {
     $userdata->student_name = $USER->lastname .', '. $USER->firstname;
 
     if ($usertrack = scorm_get_tracks($scoid, $USER->id, $attempt)) {
-        // According to SCORM 2004(RTE V1, 4.2.8), only cmi.exit==suspend should allow previous datamodel elements on re-launch.
-        if (isset($usertrack->{'cmi.exit'}) && ($usertrack->{'cmi.exit'} == 'suspend')) {
-            foreach ($usertrack as $key => $value) {
-                $userdata->$key = $value;
-            }
-        } else {
-            $userdata->status = '';
-            $userdata->score_raw = '';
+        foreach ($usertrack as $key => $value) {
+            $userdata->$key = addslashes_js($value);
         }
     } else {
         $userdata->status = '';
