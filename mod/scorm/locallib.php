@@ -1278,10 +1278,7 @@ function scorm_format_duration($duration) {
 function scorm_get_toc($user,$scorm,$cmid,$toclink=TOCJSLINK,$currentorg='',$scoid='',$mode='normal',$attempt='',$play=false, $tocheader=false) {
     global $CFG, $DB, $PAGE, $OUTPUT;
 
-    $modestr = '';
-    if ($mode == 'browse') {
-        $modestr = '&amp;mode='.$mode;
-    }
+	$modestr = '&amp;mode='.$mode;
 
     $result = new stdClass();
     if ($tocheader) {

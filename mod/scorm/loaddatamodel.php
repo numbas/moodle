@@ -28,7 +28,7 @@ require_once('locallib.php');
 $id = optional_param('id', 0, PARAM_INT);       // Course Module ID, or
 $a = optional_param('a', 0, PARAM_INT);         // scorm ID.
 $scoid = required_param('scoid', PARAM_INT);     // sco ID.
-$mode = optional_param('mode', '', PARAM_ALPHA); // navigation mode.
+$mode = optional_param('mode', 'normal', PARAM_ALPHA); // navigation mode.
 $attempt = required_param('attempt', PARAM_INT); // new attempt.
 
 if (!empty($id)) {
@@ -65,7 +65,7 @@ if ($usertrack = scorm_get_tracks($scoid, $USER->id, $attempt)) {
 }
 $userdata->student_id = addslashes_js($USER->username);
 $userdata->student_name = addslashes_js($USER->lastname .', '. $USER->firstname);
-$userdata->mode = 'normal';
+$userdata->mode = $mode;
 if (!empty($mode)) {
     $userdata->mode = $mode;
 }

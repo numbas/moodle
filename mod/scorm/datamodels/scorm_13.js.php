@@ -206,7 +206,7 @@ function SCORMapi1_3() {
         'cmi.learner_preference.audio_captioning':{'defaultvalue':<?php echo !empty($userdata->{'cmi.learner_preference.audio_captioning'})?'\''.$userdata->{'cmi.learner_preference.audio_captioning'}.'\'':'\'0\'' ?>, 'format':CMISInteger, 'range':text_range, 'mod':'rw'},
         'cmi.location':{'defaultvalue':<?php echo isset($userdata->{'cmi.location'})?'\''.$userdata->{'cmi.location'}.'\'':'null' ?>, 'format':CMIString1000, 'mod':'rw'},
         'cmi.max_time_allowed':{'defaultvalue':<?php echo !empty($userdata->attemptAbsoluteDurationLimit)?'\''.$userdata->attemptAbsoluteDurationLimit.'\'':'null' ?>, 'mod':'r'},
-        'cmi.mode':{'defaultvalue':'<?php echo $userdata->mode ?>', 'mod':'r'},
+        'cmi.mode':{'defaultvalue':'<?php echo $userdata->mode; ?>', 'mod':'r'},
         'cmi.objectives._children':{'defaultvalue':objectives_children, 'mod':'r'},
         'cmi.objectives._count':{'mod':'r', 'defaultvalue':'0'},
         'cmi.objectives.n.id':{'pattern':CMIIndex, 'format':CMILongIdentifier, 'mod':'rw'},
@@ -944,7 +944,7 @@ function SCORMapi1_3() {
     }
 
 
-    function Commit (param) {
+	function Commit (param) {
         errorCode = "0";
         if (param == "") {
             if ((Initialized) && (!Terminated)) {
