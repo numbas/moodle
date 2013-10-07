@@ -49,23 +49,16 @@ require_login($course, false, $cm);
 
 $userdata = new stdClass();
 if ($usertrack = scorm_get_tracks($scoid, $USER->id, $attempt)) {
-    // According to SCORM 2004 spec(RTE V1, 4.2.8), only cmi.exit==suspend should allow previous datamodel elements on re-launch.
-    if (!scorm_version_check($scorm->version, SCORM_13) ||
-        (isset($usertrack->{'cmi.exit'}) && ($usertrack->{'cmi.exit'} == 'suspend'))) {
-        foreach ($usertrack as $key => $value) {
-            $userdata->$key = addslashes_js($value);
-        }
-    } else {
-        $userdata->status = '';
-        $userdata->score_raw = '';
-    }
+	foreach ($usertrack as $key => $value) {
+		$userdata->$key = addslashes_js($value);
+	}
 } else {
     $userdata->status = '';
     $userdata->score_raw = '';
 }
 $userdata->student_id = addslashes_js($USER->username);
 $userdata->student_name = addslashes_js($USER->lastname .', '. $USER->firstname);
-$userdata->mode = $mode;
+$userdata->mode = 'normal';
 if (!empty($mode)) {
     $userdata->mode = $mode;
 }
