@@ -148,6 +148,9 @@ if ($scorm->lastattemptlock == 1 && $result->attemptleft == 0) {
     exit;
 }
 
+$result = scorm_get_toc($USER, $scorm, $cm->id, TOCJSLINK, $currentorg, $scoid, $mode, $attempt, true, true);
+$sco = $result->sco;
+
 add_to_log($course->id, 'scorm', 'view', "player.php?cm=$cm->id&scoid=$sco->id", "$scorm->id", $cm->id);
 
 
