@@ -825,6 +825,81 @@ function scorm_view_display ($user, $scorm, $action, $cm) {
     }
 }
 
+function scorm_view_display_review ($user, $scorm, $action, $cm) {
+    global $CFG, $DB, $PAGE, $OUTPUT;
+
+    if ($scorm->scormtype != SCORM_TYPE_LOCAL && $scorm->updatefreq == SCORM_UPDATE_EVERYTIME) {
+        scorm_parse($scorm, false);
+    }
+
+    $organization = optional_param('organization', '', PARAM_INT);
+
+    if ($scorm->displaycoursestructure == 1) {
+        echo $OUTPUT->box_start('generalbox boxaligncenter toc');
+        ?>
+        <div class="structurehead"><?php print_string('contents', 'scorm') ?></div>
+        <?php
+    }
+    if (empty($organization)) {
+        $organization = $scorm->launch;
+    }
+    if ($orgs = $DB->get_records_select_menu('scorm_scoes', 'scorm = ? AND '.
+                                         $DB->sql_isempty('scorm_scoes', 'launch', false, true).' AND '.
+                                         $DB->sql_isempty('scorm_scoes', 'organization', false, false),
+                                         array($scorm->id), 'id', 'id,title')) {
+        if (count($orgs) > 1) {
+            $select = new single_select(new moodle_url($action), 'organization', $orgs, $organization, null);
+            $select->label = get_string('organizations', 'scorm');
+            $select->class = 'scorm-center';
+            echo $OUTPUT->render($select);
+        }
+    }
+    $orgidentifier = '';
+    if ($sco = scorm_get_sco($organization, SCO_ONLY)) {
+        if (($sco->organization == '') && ($sco->launch == '')) {
+            $orgidentifier = $sco->identifier;
+        } else {
+            $orgidentifier = $sco->organization;
+        }
+    }
+
+    $scorm->version = strtolower(clean_param($scorm->version, PARAM_SAFEDIR));   // Just to be safe
+    if (!file_exists($CFG->dirroot.'/mod/scorm/datamodels/'.$scorm->version.'lib.php')) {
+        $scorm->version = 'scorm_12';
+    }
+    require_once($CFG->dirroot.'/mod/scorm/datamodels/'.$scorm->version.'lib.php');
+
+    $result = scorm_get_toc($user, $scorm, $cm->id, TOCFULLURL, $orgidentifier);
+    $incomplete = $result->incomplete;
+
+    // do we want the TOC to be displayed?
+    if ($scorm->displaycoursestructure == 1) {
+        echo $result->toc;
+        echo $OUTPUT->box_end();
+    }
+
+    // is this the first attempt ?
+    $attemptcount = scorm_get_attempt_count($user->id, $scorm);
+
+	?>
+		<div class="scorm-center">
+		   <form id="scormviewform" method="post" action="<?php echo $CFG->wwwroot ?>/mod/scorm/player.php">
+	<?php
+	echo '<input type="hidden" name="mode" value="review" />'."\n";
+	if (!empty($scorm->popup)) {
+		echo '<input type="hidden" name="display" value="popup" />'."\n";
+	}
+	?>
+		  <br />
+		  <input type="hidden" name="scoid"/>
+		  <input type="hidden" name="cm" value="<?php echo $cm->id ?>"/>
+		  <input type="hidden" name="currentorg" value="<?php echo $orgidentifier ?>" />
+		  <input type="submit" value="<?php print_string('enter', 'scorm') ?>" />
+		  </form>
+	  </div>
+	<?php
+}
+
 function scorm_simple_play($scorm, $user, $context, $cmid) {
     global $DB;
 

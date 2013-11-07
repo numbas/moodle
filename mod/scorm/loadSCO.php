@@ -66,7 +66,6 @@ if ($scorm->timeclose !=0) {
     if ($scorm->timeopen > $timenow) {
         print_error('notopenyet', 'scorm', null, userdate($scorm->timeopen));
     } else if ($timenow > $scorm->timeclose) {
-        print_error('expired', 'scorm', null, userdate($scorm->timeclose));
     }
 }
 

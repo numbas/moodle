@@ -123,8 +123,17 @@ if (!empty($scorm->timeopen) && $scorm->timeopen > $timenow) {
     $scormopen = false;
 }
 if (!empty($scorm->timeclose) && $timenow > $scorm->timeclose) {
-    echo $OUTPUT->box(get_string("expired", "scorm", userdate($scorm->timeclose)), "generalbox boxaligncenter");
-    $scormopen = false;
+	$attempts = scorm_get_attempt_count($user->id,$scorm,true);
+	if(!empty($attempts)) {
+		$can_review_text = get_string("canreview","scorm");
+		$can_review = true;
+	} else {
+		$can_review_text = "";
+		$can_review = false;
+	}
+	echo $OUTPUT->box(get_string("expired", "scorm", userdate($scorm->timeclose)) . ' ' . $can_review_text, "generalbox boxaligncenter");
+		scorm_view_display_review($USER, $scorm, 'view.php?id='.$cm->id, $cm);
+	$scormopen = false;
 }
 if ($scormopen) {
     scorm_view_display($USER, $scorm, 'view.php?id='.$cm->id, $cm);
