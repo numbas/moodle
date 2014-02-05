@@ -1270,9 +1270,11 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
         $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . $calculatedgrade . '<br />';
     }
     $result .= '</p>';
-    if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
-        $result .= '<p><font color="#cc0000">'.get_string('exceededmaxattempts', 'scorm').'</font></p>';
-    }
+    // AJY: Never display the max attempts message.  SCORM objects go into 
+    // Review Mode after the maximum number of attempts have been reached.
+    //if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
+    //    $result .= '<p><font color="#cc0000">'.get_string('exceededmaxattempts', 'scorm').'</font></p>';
+    //}
     if (!empty($cm)) {
         $context = context_module::instance($cm->id);
         if (has_capability('mod/scorm:deleteownresponses', $context) &&
