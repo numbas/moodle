@@ -110,11 +110,11 @@ $table->setup();
 
 for ($i = 0; $i < $questioncount; $i++) {
     $row = array();
-    $element = 'cmi.interactions_'.$i.'.id';
+    $element = 'cmi.interactions.'.$i.'.id';
     if (isset($usertrack->$element)) {
         $row[] = s($usertrack->$element);
 
-        $element = 'cmi.interactions_'.$i.'.student_response';
+        $element = 'cmi.interactions.'.$i.'.student_response';
         if (isset($usertrack->$element)) {
             $row[] = s($usertrack->$element);
         } else {
@@ -131,14 +131,14 @@ for ($i = 0; $i < $questioncount; $i++) {
                 }
                 $rightans .= s($usertrack->$element);
                 $j++;
-                $element = 'cmi.interactions_'.$i.'.correct_responses_'.$j.'.pattern';
+                $element = 'cmi.interactions.'.$i.'.correct_responses.'.$j.'.pattern';
             }
             $row[] = $rightans;
         } else {
             $row[] = '&nbsp;';
         }
-        $element = 'cmi.interactions_'.$i.'.result';
-        $weighting = 'cmi.interactions_'.$i.'.weighting';
+        $element = 'cmi.interactions.'.$i.'.result';
+        $weighting = 'cmi.interactions.'.$i.'.weighting';
         if (isset($usertrack->$element)) {
             $row[] = s($usertrack->$element);
             if ($usertrack->$element == 'correct' &&
@@ -159,4 +159,3 @@ $table->finish_output();
 if (!$table->is_downloading()) {
     echo $OUTPUT->footer();
 }
-
