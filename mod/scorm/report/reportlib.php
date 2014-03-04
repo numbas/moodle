@@ -66,7 +66,7 @@ function get_scorm_question_count($scormid) {
     $params[] = $scormid;
     $params[] = "cmi.interactions_%.id";
     $rs = $DB->get_recordset_select("scorm_scoes_track", $select, $params, 'element');
-    $keywords = array("cmi.interactions_", ".id");
+    $keywords = array("cmi.interactions.", ".id");
     if ($rs->valid()) {
         foreach ($rs as $record) {
             $num = trim(str_ireplace($keywords, '', $record->element));
