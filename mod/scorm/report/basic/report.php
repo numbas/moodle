@@ -415,7 +415,7 @@ class scorm_basic_report extends scorm_default_report {
                         } else {
                             $row[] = userdate($timetracks->finish);
                         }
-                        $row[] = scorm_grade_user_attempt($scorm, $scouser->userid, $scouser->attempt);
+                        $row[] = scorm_grade_user_attempt($scorm, $scouser->userid, $scouser->attempt,false);
                     }
                                     // print out all scores of attempt
                     if ($scoes) {

@@ -550,7 +550,7 @@ function scorm_get_tracks($scoid, $userid, $attempt='') {
                                                               'attempt'=>$attempt), 'element ASC')) {
         $usertrack = scorm_format_interactions($tracks);
         $usertrack->userid = $userid;
-        $usertrack->scoid = $scoid;
+		$usertrack->scoid = $scoid;
 
         return $usertrack;
     } else {
@@ -567,7 +567,8 @@ function scorm_format_interactions($trackdata) {
     $usertrack = new stdClass();
 
     // Defined in order to unify scorm1.2 and scorm2004.
-    $usertrack->score_raw = '';
+	$usertrack->score_raw = '';
+	$usertrack->score_max = '';
     $usertrack->status = '';
     $usertrack->total_time = '00:00:00';
     $usertrack->session_time = '00:00:00';
@@ -587,7 +588,10 @@ function scorm_format_interactions($trackdata) {
             case 'cmi.core.score.raw':
             case 'cmi.score.raw':
                 $usertrack->score_raw = (float) sprintf('%2.2f', $track->value);
-                break;
+				break;
+			case 'cmi.core.score.max':
+			case 'cmi.score.max':
+				$usertrack->score_max = (float) sprintf('%2.2f', $track->value);
             case 'cmi.core.session_time':
             case 'cmi.session_time':
                 $usertrack->session_time = $track->value;
@@ -637,7 +641,25 @@ function scorm_get_sco_runtime($scormid, $scoid, $userid, $attempt=1) {
     return $timedata;
 }
 
-function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
+function scorm_get_scorm_score_max($scorm, $userid, $attempt=1) {
+	global $DB;
+
+    if (!$scoes = $DB->get_records('scorm_scoes', array('scorm' => $scorm->id), 'sortorder, id')) {
+        return null;
+	}
+
+	$score_max = 0;
+
+    foreach ($scoes as $sco) {
+		if ($userdata=scorm_get_tracks($sco->id, $userid, $attempt)) {
+			$score_max += $userdata->score_max;
+        }
+	}
+
+	return $score_max;
+}
+
+function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = true) {
     global $DB;
     $attemptscore = new stdClass();
     $attemptscore->scoes = 0;
@@ -655,10 +677,14 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
             if (($userdata->status == 'completed') || ($userdata->status == 'passed')) {
                 $attemptscore->scoes++;
             }
-            if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type=='sco' && isset($userdata->score_raw))) {
+			if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type=='sco' && isset($userdata->score_raw))) {
+				$userscore = $userdata->score_raw;
+				if($percentage) {
+					$userscore = $userscore / $userdata->score_max;
+				}
                 $attemptscore->values++;
                 $attemptscore->sum += $userdata->score_raw;
-                $attemptscore->max = ($userdata->score_raw > $attemptscore->max)?$userdata->score_raw:$attemptscore->max;
+                $attemptscore->max = max($userscore, $attemptscore->max);
                 if (isset($userdata->timemodified) && ($userdata->timemodified > $attemptscore->lastmodify)) {
                     $attemptscore->lastmodify = $userdata->timemodified;
                 } else {
@@ -1250,8 +1276,8 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
         $i = 1;
         foreach ($attempts as $attempt) {
             $gradereported = scorm_grade_user_attempt($scorm, $user->id, $attempt->attemptnumber);
-            if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-                $gradereported = $gradereported/$scorm->maxgrade;
+			if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
+				$score_max = scorm_get_scorm_score_max($scorm, $user->id, $attempt->attemptnumber);
                 $gradereported = number_format($gradereported*100, 0) .'%';
             }
             $result .= get_string('gradeforattempt', 'scorm').' ' . $i . ': ' . $gradereported .'<br />';
@@ -1260,7 +1286,6 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
     }
     $calculatedgrade = scorm_grade_user($scorm, $user->id);
     if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-        $calculatedgrade = $calculatedgrade/$scorm->maxgrade;
         $calculatedgrade = number_format($calculatedgrade*100, 0) .'%';
     }
     $result .= get_string('grademethod', 'scorm'). ': ' . $grademethod;
