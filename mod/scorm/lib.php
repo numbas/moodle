@@ -583,7 +583,7 @@ function scorm_get_user_grades($scorm, $userid=0) {
                 $grades[$scouser->userid] = new stdClass();
                 $grades[$scouser->userid]->id         = $scouser->userid;
                 $grades[$scouser->userid]->userid     = $scouser->userid;
-                $grades[$scouser->userid]->rawgrade = scorm_grade_user($scorm, $scouser->userid);
+                $grades[$scouser->userid]->rawgrade = scorm_grade_user($scorm, $scouser->userid,false);
             }
         } else {
             return false;
@@ -598,7 +598,7 @@ function scorm_get_user_grades($scorm, $userid=0) {
         $grades[$userid] = new stdClass();
         $grades[$userid]->id         = $userid;
         $grades[$userid]->userid     = $userid;
-        $grades[$userid]->rawgrade = scorm_grade_user($scorm, $userid);
+        $grades[$userid]->rawgrade = scorm_grade_user($scorm, $userid,false);
     }
 
     return $grades;

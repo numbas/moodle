@@ -724,7 +724,7 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
     return $score;
 }
 
-function scorm_grade_user($scorm, $userid) {
+function scorm_grade_user($scorm, $userid, $percentage = true) {
 
     // Ensure we dont grade user beyond $scorm->maxattempt settings.
     $lastattempt = scorm_get_last_attempt($scorm->id, $userid);
@@ -734,15 +734,15 @@ function scorm_grade_user($scorm, $userid) {
 
     switch ($scorm->whatgrade) {
         case FIRSTATTEMPT:
-            return scorm_grade_user_attempt($scorm, $userid, 1);
+            return scorm_grade_user_attempt($scorm, $userid, 1, $percentage);
         break;
         case LASTATTEMPT:
-            return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid));
+            return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid), $percentage);
         break;
         case HIGHESTATTEMPT:
             $maxscore = 0;
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
-                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt);
+                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
                 $maxscore = $attemptscore > $maxscore ? $attemptscore : $maxscore;
             }
             return $maxscore;
@@ -758,7 +758,7 @@ function scorm_grade_user($scorm, $userid) {
             $lastattempt = scorm_get_last_attempt($scorm->id, $userid);
             $sumscore = 0;
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
-                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt);
+                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
                 $sumscore += $attemptscore;
             }
 
