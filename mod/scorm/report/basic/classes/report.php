@@ -139,19 +139,15 @@ class report extends \mod_scorm\report {
             $headers[] = get_string('last', 'scorm');
             $columns[] = 'score';
             $headers[] = get_string('score', 'scorm');
-			$columns[]= 'view';
-			$headers[] = get_string('viewattempt', 'scorm');
-            if ($detailedrep && $scoes = $DB->get_records('scorm_scoes', array("scorm" => $scorm->id), 'sortorder, id')) {
+            $scoes = $DB->get_records('scorm_scoes', array("scorm" => $scorm->id), 'sortorder, id')
+            if ($detailedrep) {
                 foreach ($scoes as $sco) {
                     if ($sco->launch != '') {
                         $columns[] = 'scograde'.$sco->id;
                         $headers[] = format_string($sco->title);
                     }
                 }
-            } else {
-                $scoes = null;
             }
-			$cp_scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id');
 
             if (!$download) {
                 $table = new \flexible_table('mod-scorm-report');
@@ -176,7 +172,7 @@ class report extends \mod_scorm\report {
                 $table->no_sorting('checkbox');
                 $table->no_sorting('picture');
 
-                if ( $scoes ) {
+                if ( $detailedrep && $scoes ) {
                     foreach ($scoes as $sco) {
                         if ($sco->launch != '') {
                             $table->no_sorting('scograde'.$sco->id);
@@ -413,7 +409,14 @@ class report extends \mod_scorm\report {
                         if (!$download) {
                             $url = new \moodle_url('/mod/scorm/report/userreport.php', array('id' => $cm->id,
                                     'user' => $scouser->userid, 'attempt' => $scouser->attempt));
-                            $row[] = \html_writer::link($url, $scouser->attempt);
+                            $attempt_row = \html_writer::link($url, $scouser->attempt);
+							foreach ($scoes as $sco) {
+								if($sco->launch!='') {
+									$attempt_row .= \html_writer::link(new \moodle_url('/mod/scorm/player.php', array('attempt' => $scouser->attempt, 'a' => $scorm->id, 'scoid' => $sco->id, 'userid' => $scouser->userid)), '(View)');
+									break;
+								}
+							}
+                            $row[] = $attempt_row;
                         } else {
                             $row[] = $scouser->attempt;
                         }
@@ -430,7 +433,7 @@ class report extends \mod_scorm\report {
                         $row[] = scorm_grade_user_attempt($scorm, $scouser->userid, $scouser->attempt);
                     }
                     // Print out all scores of attempt.
-                    if ($scoes) {
+                    if ($detailedrep && $scoes) {
                         foreach ($scoes as $sco) {
                             if ($sco->launch != '') {
                                 if ($trackdata = scorm_get_tracks($sco->id, $scouser->userid, $scouser->attempt)) {
@@ -476,14 +479,6 @@ class report extends \mod_scorm\report {
                             }
                         }
                     }
-					if (in_array('view', $columns) && !$download) {
-						foreach ($cp_scoes as $sco) {
-                            if($sco->launch!='') {
-                                $row[] = \html_writer::link(new \moodle_url('/mod/scorm/player.php', array('a' => $scouser->attempt, 'scoid'=>sco->id, 'userid' => $scouser->userid)), 'View');
-								break;
-							}
-						}
-					}
 
                     if (!$download) {
                         $table->add_data($row);
