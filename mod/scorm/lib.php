@@ -1028,10 +1028,10 @@ function scorm_supports($feature) {
  * @return string The filename as an absolute path
  */
 function scorm_debug_log_filename($type, $scoid) {
-    global $CFG, $USER;
+    global $CFG, $viewing_user;
 
     $logpath = $CFG->tempdir.'/scormlogs';
-    $logfile = $logpath.'/'.$type.'debug_'.$USER->id.'_'.$scoid.'.log';
+    $logfile = $logpath.'/'.$type.'debug_'.$viewing_user->id.'_'.$scoid.'.log';
     return $logfile;
 }
 
@@ -1082,7 +1082,7 @@ function scorm_debug_log_remove($type, $scoid) {
  * @return mixed
  */
 function scorm_print_overview($courses, &$htmlarray) {
-    global $USER, $CFG;
+    global $viewing_user, $CFG;
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
@@ -1116,7 +1116,7 @@ function scorm_print_overview($courses, &$htmlarray) {
             }
             if ($showattemptstatus) {
                 require_once($CFG->dirroot.'/mod/scorm/locallib.php');
-                $str .= '<div class="details">'.scorm_get_attempt_status($USER, $scorm).'</div>';
+                $str .= '<div class="details">'.scorm_get_attempt_status($viewing_user, $scorm).'</div>';
             }
             $str .= '</div>';
             if (empty($htmlarray[$scorm->course]['scorm'])) {

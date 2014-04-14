@@ -136,7 +136,9 @@ class scorm_basic_report extends scorm_default_report {
             $columns[]= 'finish';
             $headers[]= get_string('last', 'scorm');
             $columns[]= 'score';
-            $headers[]= get_string('score', 'scorm');
+			$headers[]= get_string('score', 'scorm');
+			$columns[]= 'view';
+			$headers[] = get_string('viewattempt', 'scorm');
             if ($detailedrep && $scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id')) {
                 foreach ($scoes as $sco) {
                     if ($sco->launch!='') {
@@ -147,6 +149,7 @@ class scorm_basic_report extends scorm_default_report {
             } else {
                 $scoes = null;
             }
+			$cp_scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id');
 
             if (!$download) {
                 $table = new flexible_table('mod-scorm-report');
@@ -385,7 +388,7 @@ class scorm_basic_report extends scorm_default_report {
                         $user = username_load_fields_from_object($user, $scouser, null, $additionalfields);
                         $user->id = $scouser->userid;
                         $row[] = $OUTPUT->user_picture($user, array('courseid'=>$course->id));
-                    }
+					}
                     if (!$download) {
                         $row[] = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$scouser->userid.'&amp;course='.$course->id.'">'.fullname($scouser).'</a>';
                     } else {
@@ -461,6 +464,14 @@ class scorm_basic_report extends scorm_default_report {
                             }
                         }
                     }
+					if (in_array('view', $columns) && !$download) {
+						foreach ($cp_scoes as $sco) {
+							if($sco->launch!='') {
+								$row[] = '<a target="_blank" href="'.$CFG->wwwroot.'/mod/scorm/player.php?a='.$scouser->attempt.'&a='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">View</a>';
+								break;
+							}
+						}
+					}
 
                     if (!$download) {
                         $table->add_data($row);

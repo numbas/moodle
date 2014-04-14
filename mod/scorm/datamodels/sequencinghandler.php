@@ -49,11 +49,11 @@ if (!empty($scoid) && !empty($function)) {
         switch ($function) {
             case 'scorm_seq_flow' :
                 if ($request == 'forward' || $request == 'backward') {
-                    $seq = scorm_seq_navigation ($scoid, $USER->id, $request.'_', $attempt);
+                    $seq = scorm_seq_navigation ($scoid, $viewing_user->id, $request.'_', $attempt);
                     $sco = scorm_get_sco($scoid);
-                    $seq = scorm_seq_flow($sco, $request, $seq, true, $USER->id);
+                    $seq = scorm_seq_flow($sco, $request, $seq, true, $viewing_user->id);
                     if (!empty($seq->nextactivity)) {
-                        scorm_seq_end_attempt($sco, $USER->id, $seq);
+                        scorm_seq_end_attempt($sco, $viewing_user->id, $seq);
                     }
                 }
                 echo json_encode($seq);
