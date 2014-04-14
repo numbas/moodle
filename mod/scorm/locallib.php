@@ -51,7 +51,17 @@ define('LASTATTEMPT', '3');
 define('TOCJSLINK', 1);
 define('TOCFULLURL', 2);
 
-// Local Library of functions for module scorm.
+if (is_siteadmin($user) ) {
+	$userid = optional_param('userid', '', PARAM_INT);
+	if(!empty($userid)) {
+		$viewing_user = $DB->get_record('user', array('id'=>$userid));
+	}
+} 
+if(empty($viewing_user)) {
+	$viewing_user = $USER;
+}
+
+/// Local Library of functions for module scorm
 
 /**
  * @package   mod_scorm
@@ -1377,13 +1387,13 @@ function scorm_get_attempt_count($userid, $scorm, $returnobjects = false, $ignor
  * @return boolean - debugging true/false
  */
 function scorm_debugging($scorm) {
-    global $CFG, $USER;
+    global $CFG, $viewing_user;
     $cfgscorm = get_config('scorm');
 
     if (!$cfgscorm->allowapidebug) {
         return false;
     }
-    $identifier = $USER->username.':'.$scorm->name;
+    $identifier = $viewing_user->username.':'.$scorm->name;
     $test = $cfgscorm->apidebugmask;
     // Check the regex is only a short list of safe characters.
     if (!preg_match('/^[\w\s\*\.\?\+\:\_\\\]+$/', $test)) {
@@ -1510,6 +1520,10 @@ function scorm_get_toc_object($user, $scorm, $currentorg='', $scoid='', $mode='n
     if ($mode != 'normal') {
         $modestr = '&mode='.$mode;
     }
+	$useridstr = '';
+	if ($viewing_user->id != $viewing_user->id) {
+		$useridstr = '&mode=review&userid='.$viewing_user->id;
+	}
 
     $result = array();
     $incomplete = false;
@@ -1615,7 +1629,7 @@ function scorm_get_toc_object($user, $scorm, $currentorg='', $scoid='', $mode='n
                 $sco->statusicon = $statusicon;
             }
 
-            $sco->url = 'a='.$scorm->id.'&scoid='.$sco->id.'&currentorg='.$currentorg.$modestr.'&attempt='.$attempt;
+            $sco->url = 'a='.$scorm->id.'&scoid='.$sco->id.'&currentorg='.$currentorg.$modestr.$useridstr.'&attempt='.$attempt;
             $sco->incomplete = $incomplete;
 
             if (!in_array($sco->id, array_keys($result))) {
@@ -1889,7 +1903,7 @@ function scorm_format_toc_for_droplist($scorm, $scoes, $usertracks, $currentorg=
 
 function scorm_get_toc($user, $scorm, $cmid, $toclink=TOCJSLINK, $currentorg='', $scoid='', $mode='normal',
                         $attempt='', $play=false, $tocheader=false) {
-    global $CFG, $DB, $OUTPUT;
+    global $CFG, $DB, $OUTPUT, $viewing_user, $USER;
 
     if (empty($attempt)) {
         $attempt = scorm_get_last_attempt($scorm->id, $user->id);
@@ -1948,9 +1962,13 @@ function scorm_get_toc($user, $scorm, $cmid, $toclink=TOCJSLINK, $currentorg='',
         $modestr = '';
         if ($mode != 'normal') {
             $modestr = '&mode='.$mode;
-        }
+		}
+		$useridstr = '';
+		if ($viewing_user->id != $USER->id) {
+			$useridstr = '&mode=review&userid='.$viewing_user->id;
+		}
 
-        $url = new moodle_url('/mod/scorm/player.php?a='.$scorm->id.'&currentorg='.$currentorg.$modestr);
+        $url = new moodle_url('/mod/scorm/player.php?a='.$scorm->id.'&currentorg='.$currentorg.$modestr.$useridstr);
         $result->tocmenu = $OUTPUT->single_select($url, 'scoid', $tocmenu, $result->sco->id, null, "tocmenu");
     }
 

@@ -61,8 +61,8 @@ if (confirm_sesskey() && (!empty($scoid))) {
             $element = str_replace('__', '.', $element);
             if (substr($element, 0, 3) == 'cmi') {
                 $netelement = preg_replace('/\.N(\d+)\./', "\.\$1\.", $element);
-                $result = scorm_insert_track($USER->id, $scorm->id, $scoid, $attempt, $element, $value, $scorm->forcecompleted,
-                                             $trackdata) && $result;
+                $result = scorm_insert_track($viewing_user->id, $scorm->id, $scoid, $attempt, $element, $value, 
+                                             $scorm->forcecompleted) && $result;
             }
             if (substr($element, 0, 15) == 'adl.nav.request') {
                 // SCORM 2004 Sequencing Request.
@@ -74,8 +74,8 @@ if (confirm_sesskey() && (!empty($scoid))) {
                 $action = preg_replace($search, $replace, $value);
 
                 if ($action != $value) {
-                    // Evaluating navigation request.
-                    $valid = scorm_seq_overall ($scoid, $USER->id, $action, $attempt);
+                    // Evaluating navigation request
+                    $valid = scorm_seq_overall ($scoid, $viewing_user->id, $action, $attempt);
                     $valid = 'true';
 
                     // Set valid request.

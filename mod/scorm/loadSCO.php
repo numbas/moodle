@@ -99,10 +99,10 @@ if (!isset($sco)) {
 }
 
 if ($sco->scormtype == 'asset') {
-    $attempt = scorm_get_last_attempt($scorm->id, $USER->id);
+    $attempt = scorm_get_last_attempt($scorm->id, $viewing_user->id);
     $element = (scorm_version_check($scorm->version, SCORM_13)) ? 'cmi.completion_status' : 'cmi.core.lesson_status';
     $value = 'completed';
-    $result = scorm_insert_track($USER->id, $scorm->id, $sco->id, $attempt, $element, $value);
+    $result = scorm_insert_track($viewing_user->id, $scorm->id, $sco->id, $attempt, $element, $value);
 }
 
 // Forge SCO URL.

@@ -139,6 +139,8 @@ class report extends \mod_scorm\report {
             $headers[] = get_string('last', 'scorm');
             $columns[] = 'score';
             $headers[] = get_string('score', 'scorm');
+			$columns[]= 'view';
+			$headers[] = get_string('viewattempt', 'scorm');
             if ($detailedrep && $scoes = $DB->get_records('scorm_scoes', array("scorm" => $scorm->id), 'sortorder, id')) {
                 foreach ($scoes as $sco) {
                     if ($sco->launch != '') {
@@ -149,6 +151,7 @@ class report extends \mod_scorm\report {
             } else {
                 $scoes = null;
             }
+			$cp_scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id');
 
             if (!$download) {
                 $table = new \flexible_table('mod-scorm-report');
@@ -473,6 +476,14 @@ class report extends \mod_scorm\report {
                             }
                         }
                     }
+					if (in_array('view', $columns) && !$download) {
+						foreach ($cp_scoes as $sco) {
+                            if($sco->launch!='') {
+                                $row[] = \html_writer::link(new \moodle_url('/mod/scorm/player.php', array('a' => $scouser->attempt, 'scoid'=>sco->id, 'userid' => $scouser->userid)), 'View');
+								break;
+							}
+						}
+					}
 
                     if (!$download) {
                         $table->add_data($row);

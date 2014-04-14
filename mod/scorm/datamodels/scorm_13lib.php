@@ -1190,12 +1190,12 @@ function scorm_seq_flow ($activity, $direction, $seq, $childrenflag, $userid) {
  * @return array The default values that should be used for SCORM 1.3 package
  */
 function get_scorm_default (&$userdata, $scorm, $scoid, $attempt, $mode) {
-    global $DB, $USER;
+    global $DB, $viewing_user;
 
-    $userdata->student_id = $USER->username;
-    $userdata->student_name = $USER->lastname .', '. $USER->firstname;
+    $userdata->student_id = $viewing_user->username;
+    $userdata->student_name = $viewing_user->lastname .', '. $viewing_user->firstname;
 
-    if ($usertrack = scorm_get_tracks($scoid, $USER->id, $attempt)) {
+    if ($usertrack = scorm_get_tracks($scoid, $viewing_user->id, $attempt)) {
         foreach ($usertrack as $key => $value) {
             $userdata->$key = addslashes_js($value);
         }
