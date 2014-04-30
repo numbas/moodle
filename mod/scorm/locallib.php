@@ -51,7 +51,7 @@ define('LASTATTEMPT', '3');
 define('TOCJSLINK', 1);
 define('TOCFULLURL', 2);
 
-if (is_siteadmin($user) ) {
+if (is_siteadmin($USER) ) {
 	$userid = optional_param('userid', '', PARAM_INT);
 	if(!empty($userid)) {
 		$viewing_user = $DB->get_record('user', array('id'=>$userid));
