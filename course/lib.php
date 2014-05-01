@@ -70,7 +70,6 @@ function make_log_url($module, $url) {
         case 'login':
         case 'lib':
         case 'admin':
-        case 'calendar':
         case 'category':
         case 'mnet course':
             if (strpos($url, '../') === 0) {
@@ -78,6 +77,9 @@ function make_log_url($module, $url) {
             } else {
                 $url = "/course/$url";
             }
+            break;
+        case 'calendar':
+            $url = "/calendar/$url";
             break;
         case 'user':
         case 'blog':
@@ -1982,7 +1984,7 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
     }
 
     // Indent.
-    if ($hasmanageactivities) {
+    if ($hasmanageactivities && $indent >= 0) {
         $indentlimits = new stdClass();
         $indentlimits->min = 0;
         $indentlimits->max = 16;
@@ -2582,14 +2584,14 @@ function update_course($data, $editoroptions = NULL) {
 
     // Check we don't have a duplicate shortname.
     if (!empty($data->shortname) && $oldcourse->shortname != $data->shortname) {
-        if ($DB->record_exists('course', array('shortname' => $data->shortname))) {
+        if ($DB->record_exists_sql('SELECT id from {course} WHERE shortname = ? AND id <> ?', array($data->shortname, $data->id))) {
             throw new moodle_exception('shortnametaken', '', '', $data->shortname);
         }
     }
 
     // Check we don't have a duplicate idnumber.
     if (!empty($data->idnumber) && $oldcourse->idnumber != $data->idnumber) {
-        if ($DB->record_exists('course', array('idnumber' => $data->idnumber))) {
+        if ($DB->record_exists_sql('SELECT id from {course} WHERE idnumber = ? AND id <> ?', array($data->idnumber, $data->id))) {
             throw new moodle_exception('courseidnumbertaken', '', '', $data->idnumber);
         }
     }
@@ -3210,7 +3212,7 @@ function include_course_ajax($course, $usedmodules = array(), $enabledmodules = 
     );
 
     // Include course dragdrop
-    if ($course->id != $SITE->id) {
+    if (course_format_uses_sections($course->format)) {
         $PAGE->requires->yui_module('moodle-course-dragdrop', 'M.course.init_section_dragdrop',
             array(array(
                 'courseid' => $course->id,
@@ -3241,15 +3243,19 @@ function include_course_ajax($course, $usedmodules = array(), $enabledmodules = 
             'clicktochangeinbrackets',
             'markthistopic',
             'markedthistopic',
-            'move',
             'movesection',
+            'movecoursemodule',
+            'movecoursesection',
             'movecontent',
             'tocontent',
-            'emptydragdropregion'
+            'emptydragdropregion',
+            'afterresource',
+            'aftersection',
+            'totopofsection',
         ), 'moodle');
 
-    // Include format-specific strings
-    if ($course->id != $SITE->id) {
+    // Include section-specific strings for formats which support sections.
+    if (course_format_uses_sections($course->format)) {
         $PAGE->requires->strings_for_js(array(
                 'showfromothers',
                 'hidefromothers',

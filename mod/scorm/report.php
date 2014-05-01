@@ -45,6 +45,8 @@ $url->param('id', $id);
 if (empty($mode)) {
     $mode = reset($reportlist);
 } else if (!in_array($mode, $reportlist)) {
+	echo json_encode($reportlist);
+	echo $mode;
     print_error('erroraccessingreport', 'scorm');
 }
 $url->param('mode', $mode);

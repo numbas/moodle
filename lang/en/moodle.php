@@ -115,6 +115,8 @@ $string['administratorsandteachers'] = 'Administrators and teachers';
 $string['advanced'] = 'Advanced';
 $string['advancedfilter'] = 'Advanced search';
 $string['advancedsettings'] = 'Advanced settings';
+$string['afterresource'] = 'After resource "{$a}"';
+$string['aftersection'] = 'After section "{$a}"';
 $string['again'] = 'again';
 $string['aimid'] = 'AIM ID';
 $string['ajaxuse'] = 'AJAX and Javascript';
@@ -1157,6 +1159,8 @@ $string['moreinformation'] = 'More information about this error';
 $string['moreprofileinfoneeded'] = 'Please tell us more about yourself';
 $string['mostrecently'] = 'most recently';
 $string['move'] = 'Move';
+$string['movecoursemodule'] = 'Move resource';
+$string['movecoursesection'] = 'Move section';
 $string['movecontent'] = 'Move {$a}';
 $string['movecategorycontentto'] = 'Move into';
 $string['movecategorysuccess'] = 'Successfully moved category \'{$a->moved}\' into category \'{$a->to}\'';
@@ -1567,7 +1571,12 @@ $string['searchagain'] = 'Search again';
 $string['searchbyemail'] = 'Search by email address';
 $string['searchbyusername'] = 'Search by username';
 $string['searchcourses'] = 'Search courses';
-$string['searchhelp'] = 'You can search for multiple words at once.<br /><br />word : find any match of this word within the text.<br />+word : only exact matching words will be found.<br />-word : don\'t include results containing this word.';
+$string['searchhelp'] = '<p>You can search for multiple words at once and can refine your search as follows:</p>
+<ul>
+<li>word - find any match of this word within the text.</li>
+<li>+word - only exact matching words will be found.</li>
+<li>-word - don\'t include results containing this word.</li>
+</ul>';
 $string['searchoptions'] = 'Search options';
 $string['searchresults'] = 'Search results';
 $string['sec'] = 'sec';
@@ -1608,7 +1617,7 @@ $string['selectmoduletoviewhelp'] = 'Select an activity or resource to view its 
 Double-click on an activity or resource name to quickly add it.';
 $string['selectnos'] = 'Select all \'No\'';
 $string['selectperiod'] = 'Select period';
-$string['selectcategorysort'] = 'Which categories would you like to sort';
+$string['selectcategorysort'] = 'Which categories would you like to sort?';
 $string['selectcategorysortby'] = 'Select how you would like to sort categories';
 $string['selectcoursesortby'] = 'Select how you would like to sort courses';
 $string['senddetails'] = 'Send my details via email';
@@ -1808,6 +1817,7 @@ $string['topicoutline'] = 'Topic outline';
 $string['topicshow'] = 'Show this topic to {$a}';
 $string['topichide'] = 'Hide this topic from {$a}';
 $string['total'] = 'Total';
+$string['totopofsection'] = 'To the top of section "{$a}"';
 $string['trackforums'] = 'Forum tracking';
 $string['trackforumsno'] = 'No: don\'t keep track of posts I have seen';
 $string['trackforumsyes'] = 'Yes: highlight new posts for me';

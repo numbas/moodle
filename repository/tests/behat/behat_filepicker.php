@@ -17,7 +17,7 @@
 /**
  * Filemanager and filepicker manipulation steps definitions.
  *
- * @package    core
+ * @package    core_filepicker
  * @category   test
  * @copyright  2013 David Monllaó
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -36,7 +36,7 @@ use Behat\Mink\Exception\ExpectationException as ExpectationException,
  *
  * Extends behat_files rather than behat_base as is file-related.
  *
- * @package    core
+ * @package    core_filepicker
  * @category   test
  * @copyright  2013 David Monllaó
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -366,11 +366,8 @@ class behat_filepicker extends behat_files {
 
         // The action depends on the field type.
         foreach ($datahash as $locator => $value) {
-            // Getting the node element pointed by the label.
-            $fieldnode = $this->find_field($locator);
 
-            // Gets the field type from a parent node.
-            $field = behat_field_manager::get_form_field($fieldnode, $this->getSession());
+            $field = behat_field_manager::get_form_field_from_label($locator, $this);
 
             // Delegates to the field class.
             $field->set_value($value);

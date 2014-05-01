@@ -1650,7 +1650,8 @@ Y.extend(DROPDOWN, M.core.dialogue, {
 
         body.on('clickoutside', function(e) {
             if (this.get('visible')) {
-                if (e.target !== button && e.target.ancestor() !== button) {
+                // Note: we need to compare ids because for some reason - sometimes button is an Object, not a Y.Node.
+                if (e.target.get('id') !== button.get('id') && e.target.ancestor().get('id') !== button.get('id')) {
                     e.preventDefault();
                     this.hide();
                 }
@@ -3103,7 +3104,9 @@ EDITOR.prototype = {
 
             this.currentedit.start = false;
             this.currentedit.end = false;
-            this.quicklist = new M.assignfeedback_editpdf.quickcommentlist(this);
+            if (!this.get('readonly')) {
+                this.quicklist = new M.assignfeedback_editpdf.quickcommentlist(this);
+            }
         }
     },
 
@@ -3195,6 +3198,7 @@ EDITOR.prototype = {
                 headerContent: this.get('header'),
                 bodyContent: this.get('body'),
                 footerContent: this.get('footer'),
+                modal: true,
                 width: '840px',
                 visible: false,
                 draggable: true
@@ -3359,7 +3363,9 @@ EDITOR.prototype = {
         }
 
         // Update the ui.
-        this.quicklist.load();
+        if (this.quicklist) {
+            this.quicklist.load();
+        }
         this.setup_navigation();
         this.setup_toolbar();
         this.change_page();

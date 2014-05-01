@@ -695,7 +695,11 @@ class assign_grading_table extends table_sql implements renderable {
                 $outcomes .= $this->output->container($outcome->name . ': ' . $select, 'outcome');
             } else {
                 $name = $outcome->name . ': ' . $options[$outcome->grades[$row->userid]->grade];
-                $outcomes .= $this->output->container($name, 'outcome');
+                if ($this->is_downloading()) {
+                    $outcomes .= $name;
+                } else {
+                    $outcomes .= $this->output->container($name, 'outcome');
+                }
             }
         }
 
@@ -754,6 +758,9 @@ class assign_grading_table extends table_sql implements renderable {
                               id="selectuser_' . $row->userid . '"
                               name="selectedusers"
                               value="' . $row->userid . '"/>';
+        $selectcol .= '<input type="hidden"
+                              name="grademodified_' . $row->userid . '"
+                              value="' . $row->timemarked . '"/>';
         return $selectcol;
     }
 
