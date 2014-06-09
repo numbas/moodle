@@ -122,7 +122,8 @@ $string['everytime'] = 'Every time it\'s used';
 $string['exceededmaxattempts'] = 'You have reached the maximum number of attempts.';
 $string['exit'] = 'Exit course';
 $string['exitactivity'] = 'Exit activity';
-$string['expired'] = 'Sorry, this activity closed on {$a} and is no longer available';
+$string['expired'] = 'Sorry, this activity closed on {$a} and is no longer available.';
+$string['canreview'] = 'You may re-enter the activity to review your feedback.';
 $string['external'] = 'Update external packages timing';
 $string['failed'] = 'Failed';
 $string['finishscorm'] = 'If you have finished viewing this resource, {$a}';
@@ -395,3 +396,4 @@ Notes on handling of multiple attempts:
 $string['whatgradedesc'] = 'Whether the highest, average (mean), first or last completed attempt is recorded in the gradebook if multiple attempts are allowed.';
 $string['width'] = 'Width';
 $string['window'] = 'Window';
+$string['viewattempt'] = 'View attempt';

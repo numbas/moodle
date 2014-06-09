@@ -89,9 +89,9 @@ function SCORMapi1_3() {
     var CMITimespan = '^P(\\d+Y)?(\\d+M)?(\\d+D)?(T(((\\d+H)(\\d+M)?(\\d+(\.\\d{1,2})?S)?)|((\\d+M)(\\d+(\.\\d{1,2})?S)?)|((\\d+(\.\\d{1,2})?S))))?$';
     var CMIInteger = '^\\d+$';
     var CMISInteger = '^-?([0-9]+)$';
-    var CMIDecimal = '^-?([0-9]{1,5})(\\.[0-9]{1,18})?$';
+    var CMIDecimal = '^-?([0-9]+)(\\.[0-9]+)?$';
     var CMIIdentifier = '^\\S{1,250}[a-zA-Z0-9]$';
-    var CMIShortIdentifier = '^[\\w\.]{1,250}$';
+    var CMIShortIdentifier = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?';
     var CMILongIdentifier = '^(?:(?!urn:)\\S{1,4000}|urn:[A-Za-z0-9-]{1,31}:\\S{1,4000})$';
     var CMIFeedback = '^.*$'; // This must be redefined
     var CMIIndex = '[._](\\d+).';
@@ -204,9 +204,9 @@ function SCORMapi1_3() {
         'cmi.learner_preference.language':{'defaultvalue':<?php echo !empty($userdata->{'cmi.learner_preference.language'})?'\''.$userdata->{'cmi.learner_preference.language'}.'\'':'\'\'' ?>, 'format':CMILang, 'mod':'rw'},
         'cmi.learner_preference.delivery_speed':{'defaultvalue':<?php echo !empty($userdata->{'cmi.learner_preference.delivery_speed'})?'\''.$userdata->{'cmi.learner_preference.delivery_speed'}.'\'':'\'1\'' ?>, 'format':CMIDecimal, 'range':speed_range, 'mod':'rw'},
         'cmi.learner_preference.audio_captioning':{'defaultvalue':<?php echo !empty($userdata->{'cmi.learner_preference.audio_captioning'})?'\''.$userdata->{'cmi.learner_preference.audio_captioning'}.'\'':'\'0\'' ?>, 'format':CMISInteger, 'range':text_range, 'mod':'rw'},
-        'cmi.location':{'defaultvalue':<?php echo !empty($userdata->{'cmi.location'})?'\''.$userdata->{'cmi.location'}.'\'':'null' ?>, 'format':CMIString1000, 'mod':'rw'},
+        'cmi.location':{'defaultvalue':<?php echo isset($userdata->{'cmi.location'})?'\''.$userdata->{'cmi.location'}.'\'':'null' ?>, 'format':CMIString1000, 'mod':'rw'},
         'cmi.max_time_allowed':{'defaultvalue':<?php echo !empty($userdata->attemptAbsoluteDurationLimit)?'\''.$userdata->attemptAbsoluteDurationLimit.'\'':'null' ?>, 'mod':'r'},
-        'cmi.mode':{'defaultvalue':'<?php echo $userdata->mode ?>', 'mod':'r'},
+        'cmi.mode':{'defaultvalue':'<?php echo $userdata->mode; ?>', 'mod':'r'},
         'cmi.objectives._children':{'defaultvalue':objectives_children, 'mod':'r'},
         'cmi.objectives._count':{'mod':'r', 'defaultvalue':'0'},
         'cmi.objectives.n.id':{'pattern':CMIIndex, 'format':CMILongIdentifier, 'mod':'rw'},
@@ -236,22 +236,21 @@ function SCORMapi1_3() {
     //
     // Datamodel inizialization
     //
-        var cmi = new Object();
-        cmi.comments_from_learner = new Object();
-        cmi.comments_from_learner._count = 0;
-        cmi.comments_from_lms = new Object();
-        cmi.comments_from_lms._count = 0;
-        cmi.interactions = new Object();
-        cmi.interactions._count = 0;
-        cmi.learner_preference = new Object();
-        cmi.objectives = new Object();
-        cmi.objectives._count = 0;
-        cmi.score = new Object();
+    var cmi = {
+        comments_from_learner: {_count:0},
+        comments_from_lms: {_count:0},
+        interactions: {_count:0},
+        learner_preference: {},
+        objectives: {_count:0},
+        score: {}
+    };
 
     // Navigation Object
-    var adl = new Object();
-        adl.nav = new Object();
-        adl.nav.request_valid = new Array();
+    var adl = {
+        nav: {
+            request_valid: []
+        }
+    };
 
     for (element in datamodel) {
         if (element.match(/\.n\./) == null) {
@@ -282,6 +281,7 @@ function SCORMapi1_3() {
     var Terminated = false;
     var diagnostic = "";
     var errorCode = "0";
+    var dirtyElements = {};
 
     function Initialize (param) {
         errorCode = "0";
@@ -724,7 +724,7 @@ function SCORMapi1_3() {
                                                 }
                                              break;
                                          case 'cmi.interactions.n.correct_responses.n.pattern':
-	                                         subel= subelement.split('.');
+                                             subel= subelement.split('.');
                                              subel1= 'cmi.interactions.'+subel[2];
 
                                                 if (typeof eval(subel1+'.type') == "undefined") {
@@ -769,6 +769,9 @@ function SCORMapi1_3() {
                                     value = value*1.0;
                                     if (value >= ranges[0]) {
                                         if ((ranges[1] == '*') || (value <= ranges[1])) {
+                                            if(eval(element)!=value) {
+                                                dirtyElements[element] = value;
+                                            }
                                             eval(element+'=value;');
                                             errorCode = "0";
                                             <?php
@@ -784,6 +787,9 @@ function SCORMapi1_3() {
                                         errorCode = '407';
                                     }
                                 } else {
+                                    if(eval(element)!=value) {
+                                        dirtyElements[element] = value;
+                                    }
                                     eval(element+'=value;');
                                     errorCode = "0";
                                     <?php
@@ -935,7 +941,7 @@ function SCORMapi1_3() {
     }
 
 
-    function Commit (param) {
+	function Commit (param) {
         errorCode = "0";
         if (param == "") {
             if ((Initialized) && (!Terminated)) {
@@ -1213,26 +1219,8 @@ function SCORMapi1_3() {
 
     function CollectData(data,parent) {
         var datastring = '';
-        for (property in data) {
-            if (typeof data[property] == 'object') {
-                datastring += CollectData(data[property],parent+'.'+property);
-            } else {
-                var element = parent+'.'+property;
-                var expression = new RegExp(CMIIndexStore,'g');
-                var elementmodel = String(element).replace(expression,'.n.');
-                if ((typeof eval('datamodel["'+elementmodel+'"]')) != "undefined") {
-                    if (eval('datamodel["'+elementmodel+'"].mod') != 'r') {
-                        var elementstring = '&'+underscore(element)+'='+encodeURIComponent(data[property]);
-                        if ((typeof eval('datamodel["'+elementmodel+'"].defaultvalue')) != "undefined") {
-                            if (eval('datamodel["'+elementmodel+'"].defaultvalue') != data[property] || eval('typeof(datamodel["'+elementmodel+'"].defaultvalue)') != typeof(data[property])) {
-                                datastring += elementstring;
-                            }
-                        } else {
-                            datastring += elementstring;
-                        }
-                    }
-                }
-            }
+        for (property in dirtyElements) {
+            datastring += '&'+underscore(property)+'='+encodeURIComponent(dirtyElements[property]);
         }
         return datastring;
     }
@@ -1273,6 +1261,9 @@ function SCORMapi1_3() {
             eval(results[2]);
         }
         errorCode = results[1];
+        if(results[0]=='true') {
+            dirtyElements = {};
+        }
         return results[0];
     }
 

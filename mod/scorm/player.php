@@ -52,10 +52,10 @@ if (!empty($id)) {
     print_error('missingparameter');
 }
 // If new attempt is being triggered set normal mode and increment attempt number.
-$attempt = scorm_get_last_attempt($scorm->id, $USER->id);
+$attempt = scorm_get_last_attempt($scorm->id, $viewing_user->id);
 
 // Check mode is correct and set/validate mode/attempt/newattempt (uses pass by reference).
-scorm_check_mode($scorm, $newattempt, $attempt, $USER->id, $mode);
+scorm_check_mode($scorm, $newattempt, $attempt, $viewing_user->id, $mode);
 
 $url = new moodle_url('/mod/scorm/player.php', array('scoid'=>$scoid, 'cm'=>$cm->id));
 if ($mode !== 'normal') {
@@ -112,12 +112,16 @@ if ($scorm->timeclose !=0) {
         echo $OUTPUT->box(get_string("notopenyet", "scorm", userdate($scorm->timeopen)), "generalbox boxaligncenter");
         echo $OUTPUT->footer();
         die;
-    } else if ($timenow > $scorm->timeclose) {
+	} else if ($timenow > $scorm->timeclose) {
+		/*
         echo $OUTPUT->header();
         echo $OUTPUT->box(get_string("expired", "scorm", userdate($scorm->timeclose)), "generalbox boxaligncenter");
         echo $OUTPUT->footer();
 
-        die;
+		die;
+		 */
+		$mode = 'review';
+		$newattempt = 'off';
     }
 }
 // TOC processing
@@ -127,14 +131,26 @@ if (!file_exists($CFG->dirroot.'/mod/scorm/datamodels/'.$scorm->version.'lib.php
 }
 require_once($CFG->dirroot.'/mod/scorm/datamodels/'.$scorm->version.'lib.php');
 
-$result = scorm_get_toc($USER, $scorm, $cm->id, TOCJSLINK, $currentorg, $scoid, $mode, $attempt, true, true);
+$result = scorm_get_toc($viewing_user, $scorm, $cm->id, TOCJSLINK, $currentorg, $scoid, $mode, $attempt, true, true);
 $sco = $result->sco;
-if ($scorm->lastattemptlock == 1 && $result->attemptleft == 0) {
-    echo $OUTPUT->header();
-    echo $OUTPUT->notification(get_string('exceededmaxattempts', 'scorm'));
-    echo $OUTPUT->footer();
-    exit;
+
+if (($mode == 'browse') && ($scorm->hidebrowse == 1)) {
+    $mode = 'normal';
 }
+if ($mode == 'normal') {
+    if ($trackdata = scorm_get_tracks($sco->id, $viewing_user->id, $attempt)) {
+        if (($trackdata->status == 'completed') || ($trackdata->status == 'passed') || ($trackdata->status == 'failed')) {
+            $mode = 'review';
+        } else {
+            $mode = 'normal';
+        }
+    } else {
+        $mode = 'normal';
+    }
+}
+
+$result = scorm_get_toc($viewing_user, $scorm, $cm->id, TOCJSLINK, $currentorg, $scoid, $mode, $attempt, true, true);
+$sco = $result->sco;
 
 $scoidstr = '&amp;scoid='.$sco->id;
 $modestr = '&amp;mode='.$mode;
@@ -240,7 +256,7 @@ if ($result->prerequisites) {
 ?>
     </div> <!-- SCORM page -->
 <?php
-$scoes = scorm_get_toc_object($USER, $scorm, $currentorg, $sco->id, $mode, $attempt);
+$scoes = scorm_get_toc_object($viewing_user, $scorm, $currentorg, $sco->id, $mode, $attempt);
 $adlnav = scorm_get_adlnav_json($scoes['scoes']);
 
 if (empty($scorm->popup) || $displaymode == 'popup') {

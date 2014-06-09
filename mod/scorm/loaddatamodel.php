@@ -28,7 +28,7 @@ require_once('locallib.php');
 $id = optional_param('id', 0, PARAM_INT);       // Course Module ID, or
 $a = optional_param('a', 0, PARAM_INT);         // scorm ID.
 $scoid = required_param('scoid', PARAM_INT);     // sco ID.
-$mode = optional_param('mode', '', PARAM_ALPHA); // navigation mode.
+$mode = optional_param('mode', 'normal', PARAM_ALPHA); // navigation mode.
 $currentorg = optional_param('currentorg', '', PARAM_RAW); // Selected organization.
 $attempt = required_param('attempt', PARAM_INT); // new attempt.
 
@@ -49,23 +49,16 @@ $PAGE->set_url('/mod/scorm/loaddatamodel.php', array('scoid'=>$scoid, 'id'=>$cm-
 require_login($course, false, $cm);
 
 $userdata = new stdClass();
-if ($usertrack = scorm_get_tracks($scoid, $USER->id, $attempt)) {
-    // According to SCORM 2004 spec(RTE V1, 4.2.8), only cmi.exit==suspend should allow previous datamodel elements on re-launch.
-    if (!scorm_version_check($scorm->version, SCORM_13) ||
-        (isset($usertrack->{'cmi.exit'}) && ($usertrack->{'cmi.exit'} == 'suspend'))) {
-        foreach ($usertrack as $key => $value) {
-            $userdata->$key = addslashes_js($value);
-        }
-    } else {
-        $userdata->status = '';
-        $userdata->score_raw = '';
-    }
+if ($usertrack = scorm_get_tracks($scoid, $viewing_user->id, $attempt)) {
+	foreach ($usertrack as $key => $value) {
+		$userdata->$key = addslashes_js($value);
+	}
 } else {
     $userdata->status = '';
     $userdata->score_raw = '';
 }
-$userdata->student_id = addslashes_js($USER->username);
-$userdata->student_name = addslashes_js($USER->lastname .', '. $USER->firstname);
+$userdata->student_id = addslashes_js($viewing_user->username);
+$userdata->student_name = addslashes_js($viewing_user->lastname .', '. $viewing_user->firstname);
 $userdata->mode = 'normal';
 if (!empty($mode)) {
     $userdata->mode = $mode;
@@ -108,7 +101,7 @@ if (file_exists($CFG->dirroot.'/mod/scorm/datamodels/'.$scorm->version.'.js.php'
     include_once($CFG->dirroot.'/mod/scorm/datamodels/scorm_12.js.php');
 }
 // Set the start time of this SCO.
-scorm_insert_track($USER->id, $scorm->id, $scoid, $attempt, 'x.start.time', time());
+scorm_insert_track($viewing_user->id, $scorm->id, $scoid, $attempt, 'x.start.time', time());
 ?>
 
 

@@ -51,6 +51,16 @@ define('LASTATTEMPT', '3');
 define('TOCJSLINK', 1);
 define('TOCFULLURL', 2);
 
+if (is_siteadmin($USER) ) {
+	$userid = optional_param('userid', '', PARAM_INT);
+	if(!empty($userid)) {
+		$viewing_user = $DB->get_record('user', array('id'=>$userid));
+	}
+} 
+if(empty($viewing_user)) {
+	$viewing_user = $USER;
+}
+
 /// Local Library of functions for module scorm
 
 /**
@@ -568,7 +578,7 @@ function scorm_get_tracks($scoid, $userid, $attempt='') {
                                                               'attempt'=>$attempt), 'element ASC')) {
         $usertrack = scorm_format_interactions($tracks);
         $usertrack->userid = $userid;
-        $usertrack->scoid = $scoid;
+		$usertrack->scoid = $scoid;
 
         return $usertrack;
     } else {
@@ -585,7 +595,8 @@ function scorm_format_interactions($trackdata) {
     $usertrack = new stdClass();
 
     // Defined in order to unify scorm1.2 and scorm2004.
-    $usertrack->score_raw = '';
+	$usertrack->score_raw = '';
+	$usertrack->score_max = '';
     $usertrack->status = '';
     $usertrack->total_time = '00:00:00';
     $usertrack->session_time = '00:00:00';
@@ -605,7 +616,10 @@ function scorm_format_interactions($trackdata) {
             case 'cmi.core.score.raw':
             case 'cmi.score.raw':
                 $usertrack->score_raw = (float) sprintf('%2.2f', $track->value);
-                break;
+				break;
+			case 'cmi.core.score.max':
+			case 'cmi.score.max':
+				$usertrack->score_max = (float) sprintf('%2.2f', $track->value);
             case 'cmi.core.session_time':
             case 'cmi.session_time':
                 $usertrack->session_time = $track->value;
@@ -655,7 +669,25 @@ function scorm_get_sco_runtime($scormid, $scoid, $userid, $attempt=1) {
     return $timedata;
 }
 
-function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
+function scorm_get_scorm_score_max($scorm, $userid, $attempt=1) {
+	global $DB;
+
+    if (!$scoes = $DB->get_records('scorm_scoes', array('scorm' => $scorm->id), 'sortorder, id')) {
+        return null;
+	}
+
+	$score_max = 0;
+
+    foreach ($scoes as $sco) {
+		if ($userdata=scorm_get_tracks($sco->id, $userid, $attempt)) {
+			$score_max += $userdata->score_max;
+        }
+	}
+
+	return $score_max;
+}
+
+function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = true) {
     global $DB;
     $attemptscore = new stdClass();
     $attemptscore->scoes = 0;
@@ -673,10 +705,14 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
             if (($userdata->status == 'completed') || ($userdata->status == 'passed')) {
                 $attemptscore->scoes++;
             }
-            if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type=='sco' && isset($userdata->score_raw))) {
+			if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type=='sco' && isset($userdata->score_raw))) {
+				$userscore = $userdata->score_raw;
+				if($percentage) {
+					$userscore = $userscore / $userdata->score_max;
+				}
                 $attemptscore->values++;
                 $attemptscore->sum += $userdata->score_raw;
-                $attemptscore->max = ($userdata->score_raw > $attemptscore->max)?$userdata->score_raw:$attemptscore->max;
+                $attemptscore->max = max($userscore, $attemptscore->max);
                 if (isset($userdata->timemodified) && ($userdata->timemodified > $attemptscore->lastmodify)) {
                     $attemptscore->lastmodify = $userdata->timemodified;
                 } else {
@@ -709,7 +745,7 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1) {
     return $score;
 }
 
-function scorm_grade_user($scorm, $userid) {
+function scorm_grade_user($scorm, $userid, $percentage = true) {
 
     // ensure we dont grade user beyond $scorm->maxattempt settings
     $lastattempt = scorm_get_last_attempt($scorm->id, $userid);
@@ -719,15 +755,15 @@ function scorm_grade_user($scorm, $userid) {
 
     switch ($scorm->whatgrade) {
         case FIRSTATTEMPT:
-            return scorm_grade_user_attempt($scorm, $userid, 1);
+            return scorm_grade_user_attempt($scorm, $userid, 1, $percentage);
         break;
         case LASTATTEMPT:
-            return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid));
+            return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid), $percentage);
         break;
         case HIGHESTATTEMPT:
             $maxscore = 0;
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
-                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt);
+                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
                 $maxscore = $attemptscore > $maxscore ? $attemptscore: $maxscore;
             }
             return $maxscore;
@@ -743,7 +779,7 @@ function scorm_grade_user($scorm, $userid) {
             $lastattempt = scorm_get_last_attempt($scorm->id, $userid);
             $sumscore = 0;
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
-                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt);
+                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
                 $sumscore += $attemptscore;
             }
 
@@ -923,6 +959,81 @@ function scorm_view_display ($user, $scorm, $action, $cm) {
           </div>
         <?php
     }
+}
+
+function scorm_view_display_review ($user, $scorm, $action, $cm) {
+    global $CFG, $DB, $PAGE, $OUTPUT;
+
+    if ($scorm->scormtype != SCORM_TYPE_LOCAL && $scorm->updatefreq == SCORM_UPDATE_EVERYTIME) {
+        scorm_parse($scorm, false);
+    }
+
+    $organization = optional_param('organization', '', PARAM_INT);
+
+    if ($scorm->displaycoursestructure == 1) {
+        echo $OUTPUT->box_start('generalbox boxaligncenter toc');
+        ?>
+        <div class="structurehead"><?php print_string('contents', 'scorm') ?></div>
+        <?php
+    }
+    if (empty($organization)) {
+        $organization = $scorm->launch;
+    }
+    if ($orgs = $DB->get_records_select_menu('scorm_scoes', 'scorm = ? AND '.
+                                         $DB->sql_isempty('scorm_scoes', 'launch', false, true).' AND '.
+                                         $DB->sql_isempty('scorm_scoes', 'organization', false, false),
+                                         array($scorm->id), 'id', 'id,title')) {
+        if (count($orgs) > 1) {
+            $select = new single_select(new moodle_url($action), 'organization', $orgs, $organization, null);
+            $select->label = get_string('organizations', 'scorm');
+            $select->class = 'scorm-center';
+            echo $OUTPUT->render($select);
+        }
+    }
+    $orgidentifier = '';
+    if ($sco = scorm_get_sco($organization, SCO_ONLY)) {
+        if (($sco->organization == '') && ($sco->launch == '')) {
+            $orgidentifier = $sco->identifier;
+        } else {
+            $orgidentifier = $sco->organization;
+        }
+    }
+
+    $scorm->version = strtolower(clean_param($scorm->version, PARAM_SAFEDIR));   // Just to be safe
+    if (!file_exists($CFG->dirroot.'/mod/scorm/datamodels/'.$scorm->version.'lib.php')) {
+        $scorm->version = 'scorm_12';
+    }
+    require_once($CFG->dirroot.'/mod/scorm/datamodels/'.$scorm->version.'lib.php');
+
+    $result = scorm_get_toc($user, $scorm, $cm->id, TOCFULLURL, $orgidentifier);
+    $incomplete = $result->incomplete;
+
+    // do we want the TOC to be displayed?
+    if ($scorm->displaycoursestructure == 1) {
+        echo $result->toc;
+        echo $OUTPUT->box_end();
+    }
+
+    // is this the first attempt ?
+    $attemptcount = scorm_get_attempt_count($user->id, $scorm);
+
+	?>
+		<div class="scorm-center">
+		   <form id="scormviewform" method="post" action="<?php echo $CFG->wwwroot ?>/mod/scorm/player.php">
+	<?php
+	echo '<input type="hidden" name="mode" value="review" />'."\n";
+	if (!empty($scorm->popup)) {
+		echo '<input type="hidden" name="display" value="popup" />'."\n";
+	}
+	?>
+		  <br />
+		  <input type="hidden" name="scoid"/>
+		  <input type="hidden" name="cm" value="<?php echo $cm->id ?>"/>
+		  <input type="hidden" name="currentorg" value="<?php echo $orgidentifier ?>" />
+		  <input type="submit" value="<?php print_string('enter', 'scorm') ?>" />
+		  </form>
+	  </div>
+	<?php
 }
 
 function scorm_simple_play($scorm, $user, $context, $cmid) {
@@ -1193,8 +1304,8 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
         $i = 1;
         foreach ($attempts as $attempt) {
             $gradereported = scorm_grade_user_attempt($scorm, $user->id, $attempt->attemptnumber);
-            if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-                $gradereported = $gradereported/$scorm->maxgrade;
+			if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
+				$score_max = scorm_get_scorm_score_max($scorm, $user->id, $attempt->attemptnumber);
                 $gradereported = number_format($gradereported*100, 0) .'%';
             }
             $result .= get_string('gradeforattempt', 'scorm').' ' . $i . ': ' . $gradereported .'<br />';
@@ -1203,7 +1314,6 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
     }
     $calculatedgrade = scorm_grade_user($scorm, $user->id);
     if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-        $calculatedgrade = $calculatedgrade/$scorm->maxgrade;
         $calculatedgrade = number_format($calculatedgrade*100, 0) .'%';
     }
     $result .= get_string('grademethod', 'scorm'). ': ' . $grademethod;
@@ -1213,9 +1323,11 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
         $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . $calculatedgrade . '<br />';
     }
     $result .= '</p>';
-    if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
-        $result .= '<p><font color="#cc0000">'.get_string('exceededmaxattempts', 'scorm').'</font></p>';
-    }
+    // AJY: Never display the max attempts message.  SCORM objects go into 
+    // Review Mode after the maximum number of attempts have been reached.
+    //if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
+    //    $result .= '<p><font color="#cc0000">'.get_string('exceededmaxattempts', 'scorm').'</font></p>';
+    //}
     if (!empty($cm)) {
         $context = context_module::instance($cm->id);
         if (has_capability('mod/scorm:deleteownresponses', $context) &&
@@ -1281,13 +1393,13 @@ function scorm_get_attempt_count($userid, $scorm, $returnobjects = false, $ignor
  * @return boolean - debugging true/false
  */
 function scorm_debugging($scorm) {
-    global $CFG, $USER;
+    global $CFG, $viewing_user;
     $cfg_scorm = get_config('scorm');
 
     if (!$cfg_scorm->allowapidebug) {
         return false;
     }
-    $identifier = $USER->username.':'.$scorm->name;
+    $identifier = $viewing_user->username.':'.$scorm->name;
     $test = $cfg_scorm->apidebugmask;
     // check the regex is only a short list of safe characters
     if (!preg_match('/^[\w\s\*\.\?\+\:\_\\\]+$/', $test)) {
@@ -1401,12 +1513,16 @@ function scorm_format_duration($duration) {
 }
 
 function scorm_get_toc_object($user, $scorm, $currentorg='', $scoid='', $mode='normal', $attempt='', $play=false, $organizationsco=null) {
-    global $CFG, $DB, $PAGE, $OUTPUT;
+    global $CFG, $DB, $PAGE, $OUTPUT, $viewing_user, $USER;
 
     $modestr = '';
     if ($mode != 'normal') {
         $modestr = '&mode='.$mode;
     }
+	$useridstr = '';
+	if ($viewing_user->id != $USER->id) {
+		$useridstr = '&mode=review&userid='.$viewing_user->id;
+	}
 
     $result = array();
     $incomplete = false;
@@ -1503,7 +1619,7 @@ function scorm_get_toc_object($user, $scorm, $currentorg='', $scoid='', $mode='n
                 $sco->statusicon = $statusicon;
             }
 
-            $sco->url = 'a='.$scorm->id.'&scoid='.$sco->id.'&currentorg='.$currentorg.$modestr.'&attempt='.$attempt;
+            $sco->url = 'a='.$scorm->id.'&scoid='.$sco->id.'&currentorg='.$currentorg.$modestr.$useridstr.'&attempt='.$attempt;
             $sco->incomplete = $incomplete;
 
             if (!in_array($sco->id, array_keys($result))) {
@@ -1773,7 +1889,7 @@ function scorm_format_toc_for_droplist($scorm, $scoes, $usertracks, $currentorg=
 }
 
 function scorm_get_toc($user, $scorm, $cmid, $toclink=TOCJSLINK, $currentorg='', $scoid='', $mode='normal', $attempt='', $play=false, $tocheader=false) {
-    global $CFG, $DB, $OUTPUT;
+    global $CFG, $DB, $OUTPUT, $viewing_user, $USER;
 
     if (empty($attempt)) {
         $attempt = scorm_get_last_attempt($scorm->id, $user->id);
@@ -1824,9 +1940,13 @@ function scorm_get_toc($user, $scorm, $cmid, $toclink=TOCJSLINK, $currentorg='',
         $modestr = '';
         if ($mode != 'normal') {
             $modestr = '&mode='.$mode;
-        }
+		}
+		$useridstr = '';
+		if ($viewing_user->id != $USER->id) {
+			$useridstr = '&mode=review&userid='.$viewing_user->id;
+		}
 
-        $url = new moodle_url('/mod/scorm/player.php?a='.$scorm->id.'&currentorg='.$currentorg.$modestr);
+        $url = new moodle_url('/mod/scorm/player.php?a='.$scorm->id.'&currentorg='.$currentorg.$modestr.$useridstr);
         $result->tocmenu = $OUTPUT->single_select($url, 'scoid', $tocmenu, $result->sco->id, null, "tocmenu");
     }
 

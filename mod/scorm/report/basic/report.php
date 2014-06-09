@@ -135,16 +135,15 @@ class scorm_basic_report extends scorm_default_report {
             $columns[]= 'finish';
             $headers[]= get_string('last', 'scorm');
             $columns[]= 'score';
-            $headers[]= get_string('score', 'scorm');
-            if ($detailedrep && $scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id')) {
+			$headers[]= get_string('score', 'scorm');
+			$scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id');
+            if ($detailedrep) {
                 foreach ($scoes as $sco) {
                     if ($sco->launch!='') {
                         $columns[]= 'scograde'.$sco->id;
                         $headers[]= format_string($sco->title);
                     }
                 }
-            } else {
-                $scoes = null;
             }
 
             if (!$download) {
@@ -167,7 +166,7 @@ class scorm_basic_report extends scorm_default_report {
                 $table->no_sorting('start');
                 $table->no_sorting('finish');
                 $table->no_sorting('score');
-                if ( $scoes ) {
+                if ( $detailedrep && $scoes ) {
                     foreach ($scoes as $sco) {
                         if ($sco->launch!='') {
                             $table->no_sorting('scograde'.$sco->id);
@@ -384,7 +383,7 @@ class scorm_basic_report extends scorm_default_report {
                         $user = username_load_fields_from_object($user, $scouser, null, $additionalfields);
                         $user->id = $scouser->userid;
                         $row[] = $OUTPUT->user_picture($user, array('courseid'=>$course->id));
-                    }
+					}
                     if (!$download) {
                         $row[] = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$scouser->userid.'&amp;course='.$course->id.'">'.fullname($scouser).'</a>';
                     } else {
@@ -400,7 +399,14 @@ class scorm_basic_report extends scorm_default_report {
                         $row[] = '-';
                     } else {
                         if (!$download) {
-                            $row[] = '<a href="'.$CFG->wwwroot.'/mod/scorm/report/userreport.php?id='.$cm->id.'&amp;user='.$scouser->userid.'&amp;attempt='.$scouser->attempt.'">'.$scouser->attempt.'</a>';
+                            $attemptstr = '<a href="'.$CFG->wwwroot.'/mod/scorm/report/userreport.php?id='.$cm->id.'&amp;user='.$scouser->userid.'&amp;attempt='.$scouser->attempt.'">'.$scouser->attempt.'</a>';
+							foreach ($scoes as $sco) {
+								if($sco->launch!='') {
+									$attemptstr .= ' <a target="_blank" href="'.$CFG->wwwroot.'/mod/scorm/player.php?attempt='.$scouser->attempt.'&a='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">(View)</a>';
+									break;
+								}
+							}
+							$row[] = $attemptstr;
                         } else {
                             $row[] = $scouser->attempt;
                         }
@@ -414,10 +420,10 @@ class scorm_basic_report extends scorm_default_report {
                         } else {
                             $row[] = userdate($timetracks->finish);
                         }
-                        $row[] = scorm_grade_user_attempt($scorm, $scouser->userid, $scouser->attempt);
+                        $row[] = scorm_grade_user_attempt($scorm, $scouser->userid, $scouser->attempt,false);
                     }
                                     // print out all scores of attempt
-                    if ($scoes) {
+                    if ($detailedrep && $scoes) {
                         foreach ($scoes as $sco) {
                             if ($sco->launch!='') {
                                 if ($trackdata = scorm_get_tracks($sco->id, $scouser->userid, $scouser->attempt)) {

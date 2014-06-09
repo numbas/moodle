@@ -575,7 +575,7 @@ function scorm_get_user_grades($scorm, $userid=0) {
                 $grades[$scouser->userid] = new stdClass();
                 $grades[$scouser->userid]->id         = $scouser->userid;
                 $grades[$scouser->userid]->userid     = $scouser->userid;
-                $grades[$scouser->userid]->rawgrade = scorm_grade_user($scorm, $scouser->userid);
+                $grades[$scouser->userid]->rawgrade = scorm_grade_user($scorm, $scouser->userid,false);
             }
         } else {
             return false;
@@ -588,7 +588,7 @@ function scorm_get_user_grades($scorm, $userid=0) {
         $grades[$userid] = new stdClass();
         $grades[$userid]->id         = $userid;
         $grades[$userid]->userid     = $userid;
-        $grades[$userid]->rawgrade = scorm_grade_user($scorm, $userid);
+        $grades[$userid]->rawgrade = scorm_grade_user($scorm, $userid,false);
     }
 
     return $grades;
@@ -1042,10 +1042,10 @@ function scorm_supports($feature) {
  * @return string The filename as an absolute path
  */
 function scorm_debug_log_filename($type, $scoid) {
-    global $CFG, $USER;
+    global $CFG, $viewing_user;
 
     $logpath = $CFG->tempdir.'/scormlogs';
-    $logfile = $logpath.'/'.$type.'debug_'.$USER->id.'_'.$scoid.'.log';
+    $logfile = $logpath.'/'.$type.'debug_'.$viewing_user->id.'_'.$scoid.'.log';
     return $logfile;
 }
 
@@ -1096,7 +1096,7 @@ function scorm_debug_log_remove($type, $scoid) {
  * @return mixed
  */
 function scorm_print_overview($courses, &$htmlarray) {
-    global $USER, $CFG;
+    global $viewing_user, $CFG;
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
@@ -1130,7 +1130,7 @@ function scorm_print_overview($courses, &$htmlarray) {
             }
             if ($showattemptstatus) {
                 require_once($CFG->dirroot.'/mod/scorm/locallib.php');
-                $str .= '<div class="details">'.scorm_get_attempt_status($USER, $scorm).'</div>';
+                $str .= '<div class="details">'.scorm_get_attempt_status($viewing_user, $scorm).'</div>';
             }
             $str .= '</div>';
             if (empty($htmlarray[$scorm->course]['scorm'])) {
@@ -1445,7 +1445,7 @@ function scorm_check_mode($scorm, &$newattempt, &$attempt, $userid, &$mode) {
     if ($incomplete === true) {
         // The option to start a new attempt should never have been presented. Force false.
         $newattempt = 'off';
-    } else if (!empty($scorm->forcenewattempt)) {
+    } else if (($attempt !== '1') && !empty($scorm->forcenewattempt)) {
         // A new attempt should be forced for already completed attempts.
         $newattempt = 'on';
     }
@@ -1459,5 +1459,32 @@ function scorm_check_mode($scorm, &$newattempt, &$attempt, $userid, &$mode) {
         } else {
             $mode = 'review';
         }
+    }
+}
+
+/**
+ * Sets dynamic information about a course module
+ *
+ * This function is called from cm_info when displaying the module
+ *
+ * mod_scorm uses its own availability fields, so use those to decide whether the coursemodule is available
+ *
+ * @param cm_info $cm
+ */
+function mod_scorm_cm_info_dynamic(cm_info $cm) {
+    global $DB;
+    $sql = "SELECT timeopen, timeclose 
+                FROM {scorm} s
+                WHERE s.id=?";
+
+    if($scorm = $DB->get_record_sql($sql, array($cm->instance))) {
+        $unavailable = $scorm->timeopen > time() || ($scorm->timeclose && $scorm->timeclose < time());
+		if($scorm->timeopen > time()) {
+			$message = get_string("notopenyet", "scorm", userdate($scorm->timeopen));
+		}
+		else if($scorm->timeclose < time()) {
+			$message = get_string("expired", "scorm", userdate($scorm->timeclose));
+		}
+		$cm->set_available(!$unavailable,$showavailability=1,$message);
     }
 }
