@@ -2228,7 +2228,7 @@ class global_navigation extends navigation_node {
         // Add a node to view the users notes if permitted
         if (!empty($CFG->enablenotes) && has_any_capability(array('moodle/notes:manage', 'moodle/notes:view'), $coursecontext)) {
             $url = new moodle_url('/notes/index.php',array('user'=>$user->id));
-            if ($coursecontext->instanceid) {
+            if ($coursecontext->instanceid != SITEID) {
                 $url->param('course', $coursecontext->instanceid);
             }
             $usernode->add(get_string('notes', 'notes'), $url);
@@ -2769,6 +2769,12 @@ class global_navigation_for_ajax extends global_navigation {
                 break;
             case self::TYPE_COURSE :
                 $course = $DB->get_record('course', array('id' => $this->instanceid), '*', MUST_EXIST);
+                if (!can_access_course($course)) {
+                    // Thats OK all courses are expandable by default. We don't need to actually expand it we can just
+                    // add the course node and break. This leads to an empty node.
+                    $this->add_course($course);
+                    break;
+                }
                 require_course_login($course, true, null, false, true);
                 $this->page->set_context(context_course::instance($course->id));
                 $coursenode = $this->add_course($course);
@@ -4491,6 +4497,7 @@ class settings_navigation_ajax extends settings_navigation {
         if ($this->initialised || during_initial_install()) {
             return false;
         }
+        $this->context = $this->page->context;
         $this->load_administration_settings();
 
         // Check if local plugins is adding node to site admin.
