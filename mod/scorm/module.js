@@ -188,10 +188,11 @@ M.mod_scorm.init = function(Y, nav_display, navposition_left, navposition_top, h
                     return;
                 }
                 var b = iframe.contentWindow.document.body;
-                iframe.style.height = b.offsetHeight+'px';
+                var height = Math.max(500,b.offsetHeight);
+                iframe.style.height = height+'px';
             }
             iframe.addEventListener('load',function() {
-                setInterval(resize_iframe,100);
+                setInterval(resize_iframe,500);
             });
 
             var old = Y.one('#scorm_object');
