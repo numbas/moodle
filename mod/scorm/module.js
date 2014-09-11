@@ -155,6 +155,7 @@ M.mod_scorm.init = function(Y, nav_display, navposition_left, navposition_top, h
 
             var obj = document.createElement('iframe');
             obj.setAttribute('id', 'scorm_object');
+            obj.setAttribute('scrolling','no');
             obj.setAttribute('type', 'text/html');
             if (!window_name && node.title != null) {
                 obj.setAttribute('src', url_prefix + node.title);
@@ -166,6 +167,18 @@ M.mod_scorm.init = function(Y, nav_display, navposition_left, navposition_top, h
                 }
                 mine.close();
             }
+
+            var iframe = obj;
+            function resize_iframe() {
+                if(!iframe.contentWindow) {
+                    return;
+                }
+                var b = iframe.contentWindow.document.body;
+                iframe.style.height = b.offsetHeight+'px';
+            }
+            iframe.addEventListener('load',function() {
+                setInterval(resize_iframe,100);
+            });
 
             if (old) {
                 if(window_name) {
