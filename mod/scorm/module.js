@@ -187,9 +187,12 @@ M.mod_scorm.init = function(Y, nav_display, navposition_left, navposition_top, h
                 if(!iframe.contentWindow) {
                     return;
                 }
-                var b = iframe.contentWindow.document.body;
-                var height = Math.max(500,b.offsetHeight);
-                iframe.style.height = height+'px';
+				try {
+	                var b = iframe.contentWindow.document.body;
+    	            var height = Math.max(500,b.offsetHeight);
+	                iframe.style.height = height+'px';
+				} catch(e) {
+				}
             }
             iframe.addEventListener('load',function() {
                 setInterval(resize_iframe,500);
