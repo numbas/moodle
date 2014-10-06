@@ -415,6 +415,11 @@ class report extends \mod_scorm\report {
 									$attempt_row .= \html_writer::link(new \moodle_url('/mod/scorm/player.php', array('attempt' => $scouser->attempt, 'a' => $scorm->id, 'scoid' => $sco->id, 'userid' => $scouser->userid)), '(View)');
 									break;
 								}
+								if($userdata=scorm_get_tracks($sco->id,$scouser->userid,$scouser->attempt)) {
+                                    if($userdata->completed) {
+                                        $attempt_row .= \html_writer::link(new \moodle_url('/mod/scorm/reopen.php', array('attempt' => $scouser->attempt, 'scormid' => $scorm->id, 'scoid' => $sco->id, 'userid' => $scouser->userid)),'(Reopen)');
+									}
+								}
 							}
                             $row[] = $attempt_row;
                         } else {
