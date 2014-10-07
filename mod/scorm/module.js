@@ -316,7 +316,7 @@ M.mod_scorm.init = function(Y, nav_display, navposition_left, navposition_top, h
             if (newheight < 600) {
                 newheight = 600;
             }
-            Y.one('#scorm_layout').setStyle('height', newheight);
+            //Y.one('#scorm_layout').setStyle('height', newheight);
 
         };
 
