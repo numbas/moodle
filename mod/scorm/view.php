@@ -175,7 +175,7 @@ if (!empty($scorm->timeopen) && $scorm->timeopen > $timenow) {
     $scormopen = false;
 }
 if (!empty($scorm->timeclose) && $timenow > $scorm->timeclose) {
-	$attempts = scorm_get_attempt_count($user->id,$scorm,true);
+	$attempts = scorm_get_attempt_count($USER->id,$scorm,true);
 	if(!empty($attempts)) {
 		$can_review_text = get_string("canreview","scorm");
 		$can_review = true;
