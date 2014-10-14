@@ -1440,6 +1440,17 @@ function scorm_check_mode($scorm, &$newattempt, &$attempt, $userid, &$mode) {
         }
     }
     $tracks->close();
+    $tracks = $DB->get_recordset('scorm_scoes_track', array('scormid' => $scorm->id, 'userid' => $userid,
+        'attempt' => $attempt, 'element' => 'cmi.completion_status'));
+    foreach ($tracks as $track) {
+        if ($track->value == 'completed') {
+            $incomplete = false;
+        } else {
+            $incomplete = true;
+            break; // Found an incomplete sco, so the result as a whole is incomplete.
+        }
+    }
+    $tracks->close();
 
     // Validate user request to start a new attempt.
     if ($incomplete === true) {

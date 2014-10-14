@@ -403,7 +403,11 @@ class scorm_basic_report extends scorm_default_report {
 							foreach ($scoes as $sco) {
 								if($sco->launch!='') {
 									$attemptstr .= ' <a target="_blank" href="'.$CFG->wwwroot.'/mod/scorm/player.php?attempt='.$scouser->attempt.'&a='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">(View)</a>';
-									break;
+								}
+								if($userdata=scorm_get_tracks($sco->id,$scouser->userid,$scouser->attempt)) {
+									if($userdata->completed) {
+										$attemptstr .= ' <a href="'.$CFG->wwwroot.'/mod/scorm/reopen.php?attempt='.$scouser->attempt.'&scormid='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">(Reopen)</a>';
+									}
 								}
 							}
 							$row[] = $attemptstr;
