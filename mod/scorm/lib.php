@@ -1472,30 +1472,3 @@ function scorm_check_mode($scorm, &$newattempt, &$attempt, $userid, &$mode) {
         }
     }
 }
-
-/**
- * Sets dynamic information about a course module
- *
- * This function is called from cm_info when displaying the module
- *
- * mod_scorm uses its own availability fields, so use those to decide whether the coursemodule is available
- *
- * @param cm_info $cm
- */
-function mod_scorm_cm_info_dynamic(cm_info $cm) {
-    global $DB;
-    $sql = "SELECT timeopen, timeclose 
-                FROM {scorm} s
-                WHERE s.id=?";
-
-    if($scorm = $DB->get_record_sql($sql, array($cm->instance))) {
-        $unavailable = $scorm->timeopen > time() || ($scorm->timeclose && $scorm->timeclose < time());
-		if($scorm->timeopen > time()) {
-			$message = get_string("notopenyet", "scorm", userdate($scorm->timeopen));
-		}
-		else if($scorm->timeclose < time()) {
-			$message = get_string("expired", "scorm", userdate($scorm->timeclose));
-		}
-		$cm->set_available(!$unavailable,$showavailability=1,$message);
-    }
-}
