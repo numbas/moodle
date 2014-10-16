@@ -612,6 +612,7 @@ function scorm_format_interactions($trackdata) {
                     $track->value = 'notattempted';
                 }
                 $usertrack->status = $track->value;
+                $usertrack->completed = $usertrack->status=='completed' || $usertrack->status == 'passed';
                 break;
             case 'cmi.core.score.raw':
             case 'cmi.score.raw':
