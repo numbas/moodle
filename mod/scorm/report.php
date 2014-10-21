@@ -30,7 +30,7 @@ define('SCORM_REPORT_ATTEMPTS_STUDENTS_WITH_NO', 2);
 
 $id = required_param('id', PARAM_INT);// Course Module ID, or ...
 $download = optional_param('download', '', PARAM_RAW);
-$mode = optional_param('mode', '', PARAM_ALPHA); // Report mode.
+$mode = optional_param('mode', '', PARAM_ALPHAEXT); // Report mode
 
 $cm = get_coursemodule_from_id('scorm', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
