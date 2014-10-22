@@ -225,7 +225,7 @@ $LMS_api = (scorm_version_check($scorm->version, SCORM_12) || empty($scorm->vers
 
        function doredirect() {
             if (myGetAPIHandle() != null) {
-                location = "<?php echo $result ?>";
+                location.replace("<?php echo $result ?>");
             }
             else {
                 document.body.innerHTML = "<p><?php echo get_string('activityloading', 'scorm');?> <span id='countdown'><?php echo $delayseconds ?></span> <?php echo get_string('numseconds', 'moodle', '');?>. &nbsp; <img src='<?php echo $OUTPUT->pix_url('wait', 'scorm') ?>'><p>";
@@ -237,7 +237,7 @@ $LMS_api = (scorm_version_check($scorm->version, SCORM_12) || empty($scorm->vers
                                                 } else {
                                                     clearInterval(timer);
                                                     document.body.innerHTML = "<p><?php echo get_string('activitypleasewait', 'scorm');?></p>";
-                                                    location = "<?php echo $result ?>";
+                                                    location.replace("<?php echo $result ?>");
                                                 }
                                             }, 1000);
             }
