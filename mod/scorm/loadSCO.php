@@ -222,7 +222,7 @@ echo html_writer::tag('title', 'LoadSCO');
 
    function doredirect() {
         if (myGetAPIHandle() != null) {
-            location = "<?php echo $result ?>";
+            location.replace("<?php echo $result ?>");
         }
         else {
             document.body.innerHTML = "<p><?php echo get_string('activityloading', 'scorm');?>" +
@@ -237,7 +237,7 @@ echo html_writer::tag('title', 'LoadSCO');
                                             } else {
                                                 clearInterval(timer);
                                                 document.body.innerHTML = "<p><?php echo get_string('activitypleasewait', 'scorm');?></p>";
-                                                location = "<?php echo $result ?>";
+                                                location.replace("<?php echo $result ?>");
                                             }
                                         }, 1000);
         }
