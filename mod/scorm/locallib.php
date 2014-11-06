@@ -717,25 +717,28 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = tru
 
     foreach ($scoes as $sco) {
         if ($userdata = scorm_get_tracks($sco->id, $userid, $attempt)) {
-            if (($userdata->status == 'completed') || ($userdata->status == 'passed')) {
+            if ($userdata->completed) {
                 $attemptscore->scoes++;
-            }
-            if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type == 'sco' && isset($userdata->score_raw))) {
-                $userscore = $userdata->score_raw;
-                if($percentage) {
-                    $userscore = $userscore / $userdata->score_max;
-                }
-                $attemptscore->values++;
-                $attemptscore->sum += $userdata->score_raw;
-                $attemptscore->max = ($userdata->score_raw > $attemptscore->max) ? $userdata->score_raw : $attemptscore->max;
-                if (isset($userdata->timemodified) && ($userdata->timemodified > $attemptscore->lastmodify)) {
-                    $attemptscore->lastmodify = $userdata->timemodified;
-                } else {
-                    $attemptscore->lastmodify = 0;
+                if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type == 'sco' && isset($userdata->score_raw))) {
+                    $userscore = $userdata->score_raw;
+                    if($percentage) {
+                        $userscore = $userscore / $userdata->score_max;
+                    }
+                    $attemptscore->values++;
+                    $attemptscore->sum += $userdata->score_raw;
+                    $attemptscore->max = ($userdata->score_raw > $attemptscore->max) ? $userdata->score_raw : $attemptscore->max;
+                    if (isset($userdata->timemodified) && ($userdata->timemodified > $attemptscore->lastmodify)) {
+                        $attemptscore->lastmodify = $userdata->timemodified;
+                    } else {
+                        $attemptscore->lastmodify = 0;
+                    }
                 }
             }
         }
-    }
+	}
+	if(count($scoes)>1 && $attemptscore->scoes==0) {
+		return "incomplete";
+	}
     switch ($scorm->grademethod) {
         case GRADEHIGHEST:
             $score = (float) $attemptscore->max;
@@ -776,10 +779,12 @@ function scorm_grade_user($scorm, $userid, $percentage = true) {
             return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid), $percentage);
         break;
         case HIGHESTATTEMPT:
-            $maxscore = 0;
+            $maxscore = 'incomplete';
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
                 $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
-                $maxscore = $attemptscore > $maxscore ? $attemptscore : $maxscore;
+				if($attemptscore!='incomplete') {
+					$maxscore = $maxscore=='incomplete' || $attemptscore > $maxscore ? $attemptscore : $maxscore;
+				}
             }
             return $maxscore;
 
@@ -1322,20 +1327,38 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
 
     if (!empty($attempts)) {
         $i = 1;
-        foreach ($attempts as $attempt) {
-            $gradereported = scorm_grade_user_attempt($scorm, $user->id, $attempt->attemptnumber);
-            if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-                $gradereported = $gradereported / $scorm->maxgrade;
-                $gradereported = number_format($gradereported * 100, 0) .'%';
-            }
-            $result .= get_string('gradeforattempt', 'scorm').' ' . $i . ': ' . $gradereported .html_writer::empty_tag('br');
+		foreach ($attempts as $attempt) {
+			$completed = true;
+			if ($scoes = $DB->get_records('scorm_scoes', array('scorm' => $scorm->id), 'sortorder, id')) {
+				foreach ($scoes as $sco) {
+					if ($userdata=scorm_get_tracks($sco->id, $user->id, $attempt->attemptnumber)) {
+						if(!$userdata->completed) {
+							$completed = false;
+							break;
+						}
+					}
+				}
+			}
+			if($completed) {
+	            $gradereported = scorm_grade_user_attempt($scorm, $user->id, $attempt->attemptnumber);
+				if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
+					$score_max = scorm_get_scorm_score_max($scorm, $user->id, $attempt->attemptnumber);
+            	    $gradereported = number_format($gradereported*100, 0) .'%';
+	            }
+			} else {
+				$gradereported = get_string('incomplete','scorm');
+			}
+            $result .= get_string('gradeforattempt', 'scorm').' ' . $i . ': ' . $gradereported . html_writer::empty_tag('br');
             $i++;
         }
     }
     $calculatedgrade = scorm_grade_user($scorm, $user->id);
-    if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-        $calculatedgrade = $calculatedgrade / $scorm->maxgrade;
-        $calculatedgrade = number_format($calculatedgrade * 100, 0) .'%';
+	if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
+		if($calculatedgrade != 'incomplete') {
+	    	$calculatedgrade = number_format($calculatedgrade*100, 0) . '%';
+		} else {
+			$calculatedgrade = get_string('incomplete','scorm');
+		}
     }
     $result .= get_string('grademethod', 'scorm'). ': ' . $grademethod;
     if (empty($attempts)) {
