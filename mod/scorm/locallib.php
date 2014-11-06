@@ -736,9 +736,7 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = tru
             }
         }
 	}
-	if(count($scoes)>1 && $attemptscore->scoes==0) {
-		return "incomplete";
-	}
+
     switch ($scorm->grademethod) {
         case GRADEHIGHEST:
             $score = (float) $attemptscore->max;
@@ -779,17 +777,15 @@ function scorm_grade_user($scorm, $userid, $percentage = true) {
             return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid), $percentage);
         break;
         case HIGHESTATTEMPT:
-            $maxscore = 'incomplete';
+            $maxscore = 0;
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
-                $attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
-				if($attemptscore!='incomplete') {
-					$maxscore = $maxscore=='incomplete' || $attemptscore > $maxscore ? $attemptscore : $maxscore;
-				}
-            }
-            return $maxscore;
+				$attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
+				$maxscore = $attemptscore > $maxscore ? $attemptscore : $maxscore;
+			}
+			return $maxscore;
 
         break;
-        case AVERAGEATTEMPT:
+		case AVERAGEATTEMPT:
             $attemptcount = scorm_get_attempt_count($userid, $scorm, true, true);
             if (empty($attemptcount)) {
                 return 0;
@@ -1359,19 +1355,7 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
 		} else {
 			$calculatedgrade = get_string('incomplete','scorm');
 		}
-    }
-    $result .= get_string('grademethod', 'scorm'). ': ' . $grademethod;
-    if (empty($attempts)) {
-        $result .= html_writer::empty_tag('br').get_string('gradereported', 'scorm').
-                    ': '.get_string('none').html_writer::empty_tag('br');
-    } else {
-        $result .= html_writer::empty_tag('br').get_string('gradereported', 'scorm').
-                    ': '.$calculatedgrade.html_writer::empty_tag('br');
-    }
-    $result .= html_writer::end_tag('p');
-    if ($attemptcount >= $scorm->maxattempt and $scorm->maxattempt > 0) {
-        $result .= html_writer::tag('p', get_string('exceededmaxattempts', 'scorm'), array('class' => 'exceededmaxattempts'));
-    }
+	}
     if (!empty($cm)) {
         $context = context_module::instance($cm->id);
         if (has_capability('mod/scorm:deleteownresponses', $context) &&
