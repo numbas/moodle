@@ -722,9 +722,7 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = tru
             }
         }
 	}
-	if(count($scoes)>1 && $attemptscore->scoes==0) {
-		return "incomplete";
-	}
+
     switch ($scorm->grademethod) {
         case GRADEHIGHEST:
             $score = (float) $attemptscore->max;
@@ -765,17 +763,15 @@ function scorm_grade_user($scorm, $userid, $percentage = true) {
             return scorm_grade_user_attempt($scorm, $userid, scorm_get_last_completed_attempt($scorm->id, $userid), $percentage);
         break;
         case HIGHESTATTEMPT:
-            $maxscore = 'incomplete';
+            $maxscore = 0;
             for ($attempt = 1; $attempt <= $lastattempt; $attempt++) {
 				$attemptscore = scorm_grade_user_attempt($scorm, $userid, $attempt, $percentage);
-				if($attemptscore!='incomplete') {
-					$maxscore = $maxscore=='incomplete' || $attemptscore > $maxscore ? $attemptscore: $maxscore;
-				}
-            }
-            return $maxscore;
+				$maxscore = $attemptscore > $maxscore ? $attemptscore: $maxscore;
+			}
+			return $maxscore;
 
         break;
-        case AVERAGEATTEMPT:
+		case AVERAGEATTEMPT:
             $attemptcount = scorm_get_attempt_count($userid, $scorm, true, true);
             if (empty($attemptcount)) {
                 return 0;
@@ -1335,18 +1331,21 @@ function scorm_get_attempt_status($user, $scorm, $cm='') {
     }
     $calculatedgrade = scorm_grade_user($scorm, $user->id);
 	if ($scorm->grademethod !== GRADESCOES && !empty($scorm->maxgrade)) {
-		if($calculatedgrade != 'incomplete') {
+		if($calculatedgrade !== 'incomplete') {
 	    	$calculatedgrade = number_format($calculatedgrade*100, 0) .'%';
 		} else {
 			$calculatedgrade = get_string('incomplete','scorm');
 		}
-    }
+	}
+	// removed until I can sort out how to grade only completed attempts
+	/*
     $result .= get_string('grademethod', 'scorm'). ': ' . $grademethod;
     if (empty($attempts)) {
         $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . get_string('none') . '<br />';
     } else {
         $result .= '<br />' . get_string('gradereported', 'scorm') . ': ' . $calculatedgrade . '<br />';
-    }
+	}
+	 */
     $result .= '</p>';
     // AJY: Never display the max attempts message.  SCORM objects go into 
     // Review Mode after the maximum number of attempts have been reached.
