@@ -688,7 +688,7 @@ function scorm_get_scorm_score_max($scorm, $userid, $attempt=1) {
 	return $score_max;
 }
 
-function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = true) {
+function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = true, $include_incomplete = false) {
     global $DB;
     $attemptscore = new stdClass();
     $attemptscore->scoes = 0;
@@ -703,7 +703,7 @@ function scorm_grade_user_attempt($scorm, $userid, $attempt=1, $percentage = tru
 
     foreach ($scoes as $sco) {
         if ($userdata=scorm_get_tracks($sco->id, $userid, $attempt)) {
-            if ($userdata->completed) {
+            if ($userdata->completed || $include_incomplete) {
                 $attemptscore->scoes++;
 				if (!empty($userdata->score_raw) || (isset($scorm->type) && $scorm->type=='sco' && isset($userdata->score_raw))) {
 					$userscore = $userdata->score_raw;
