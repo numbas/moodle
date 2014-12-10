@@ -115,8 +115,11 @@ for ($i = 0; $i < $questioncount; $i++) {
         $row[] = s($usertrack->$element);
 
         $element = 'cmi.interactions.'.$i.'.student_response';
+	$element_2004 = 'cmi.interactions.'.$i.'.learner_response';
         if (isset($usertrack->$element)) {
             $row[] = s($usertrack->$element);
+	} else if(isset($usertrack->$element_2004)) {
+	    $row[] = s($usertrack->$element_2004);
         } else {
             $row[] = '&nbsp;';
         }
