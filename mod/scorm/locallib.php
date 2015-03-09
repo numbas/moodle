@@ -1798,7 +1798,9 @@ function scorm_format_toc_for_treeview($user, $scorm, $scoes, $usertracks, $cmid
                     $viewscore = has_capability('mod/scorm:viewscores', context_module::instance($cmid));
                     if (isset($usertracks[$sco->identifier]->score_raw) && $viewscore) {
                         if ($usertracks[$sco->identifier]->score_raw != '') {
-                            $score = '('.get_string('score', 'scorm').':&nbsp;'.$usertracks[$sco->identifier]->score_raw.')';
+                            if($scorm->displayscoresintoc) {
+                                $score = '('.get_string('score', 'scorm').':&nbsp;'.$usertracks[$sco->identifier]->score_raw.')';
+                            }
                         }
                     }
                 }
