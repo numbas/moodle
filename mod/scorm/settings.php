@@ -28,6 +28,10 @@ if ($ADMIN->fulltree) {
         get_string('displaycoursestructure', 'scorm'), get_string('displaycoursestructuredesc', 'scorm'),
         array('value' => 0, 'adv' => false), $yesno));
 
+    $settings->add(new admin_setting_configselect_with_advanced('scorm/displayscoresintoc',
+        get_string('displayscoresintoc', 'scorm'), get_string('displayscoresintocdesc', 'scorm'),
+        array('value' => 0, 'adv' => false), $yesno));
+
     $settings->add(new admin_setting_configselect_with_advanced('scorm/popup',
         get_string('display', 'scorm'), get_string('displaydesc', 'scorm'),
         array('value' => 0, 'adv' => false), scorm_get_popup_display_array()));

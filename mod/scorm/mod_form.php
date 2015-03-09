@@ -167,6 +167,12 @@ class mod_scorm_mod_form extends moodleform_mod {
         $mform->setAdvanced('hidetoc', $cfgscorm->hidetoc_adv);
         $mform->disabledIf('hidetoc', 'scormtype', 'eq', SCORM_TYPE_AICCURL);
 
+        // Display scores in Toc
+        $mform->addElement('selectyesno', 'displayscoresintoc', get_string('displayscoresintoc', 'scorm'));
+        $mform->addHelpButton('displayscoresintoc', 'displayscoresintoc', 'scorm');
+        $mform->setDefault('displayscoresintoc', $cfgscorm->displayscoresintoc);
+        $mform->setAdvanced('displayscoresintoc', $cfgscorm->displayscoresintoc_adv);
+
         // Navigation panel display.
         $mform->addElement('select', 'nav', get_string('nav', 'scorm'), scorm_get_navigation_display_array());
         $mform->addHelpButton('nav', 'nav', 'scorm');

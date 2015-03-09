@@ -276,6 +276,31 @@ function xmldb_scorm_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014040200, 'scorm');
     }
 
+    if ($oldversion < 2015030900) {
+        // Define field displayscoresintoc to be added to scorm.
+        $table = new xmldb_table('scorm');
+        $field = new xmldb_field(
+            'displayscoresintoc',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            XMLDB_UNSIGNED,
+            XMLDB_NOTNULL,
+            null,
+            '1',
+            'displaycoursestructure'
+        );
+
+        // Conditionally launch add field displayactivityname.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Scorm savepoint reached.
+        upgrade_mod_savepoint(true, 2015030900, 'scorm');
+ 
+
+    }
+
     // Moodle v2.7.0 release upgrade line.
     // Put any upgrade step following this.
 
