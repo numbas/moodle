@@ -74,8 +74,36 @@ class mod_scorm_renderer extends plugin_renderer_base {
         }
 
         return html_writer::tag('div', $output, array('class' => 'paging'));
-    }
+	}
 
+	/**
+	 * Render confirmation dialog to reopen attempt
+	 */
+	public function confirm_reopen_attempt($cm,$scormid,$scoid,$user,$attempt) {
+		$report_url = new moodle_url('/mod/scorm/report.php',array('id'=>$cm->id));
+		$confirm_url = new moodle_url('/mod/scorm/reopen.php',array('attempt'=>$attempt, 'scormid'=>$scormid, 'scoid'=>$scoid, 'userid'=>$user->id,'confirm'=>true));
+		$out = '';
+		$out .= html_writer::tag('p',"Reopen attempt $attempt by ".fullname($user).".");
+		$out .= $this->output->confirm("Are you sure?",$confirm_url,$report_url);
+		return $out;
+	}
+
+	/**
+	 * Show result of reopening attempt
+	 */
+	public function reopen_attempt($cm,$success) {
+		$out = '';
+		if($success) {
+			$out .= html_writer::tag('p','Attempt reopened.');
+		} else {
+			$out .= html_writer::tag('p','No such attempt.');
+		}
+		$out .= html_writer::start_tag('p');
+		$report_url = new moodle_url('/mod/scorm/report.php',array('id'=>$cm->id));
+		$out .= html_writer::link($report_url,'Back to report') . '.';
+		$out .= html_writer::end_tag('p');
+		return $out;
+	}
 }
 
 /**
