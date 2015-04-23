@@ -135,8 +135,8 @@ class scorm_basic_report extends scorm_default_report {
             $columns[]= 'finish';
             $headers[]= get_string('last', 'scorm');
             $columns[]= 'score';
-			$headers[]= get_string('score', 'scorm');
-			$scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id');
+            $headers[]= get_string('score', 'scorm');
+            $scoes = $DB->get_records('scorm_scoes', array("scorm"=>$scorm->id), 'sortorder, id');
             if ($detailedrep) {
                 foreach ($scoes as $sco) {
                     if ($sco->launch!='') {
@@ -383,7 +383,7 @@ class scorm_basic_report extends scorm_default_report {
                         $user = username_load_fields_from_object($user, $scouser, null, $additionalfields);
                         $user->id = $scouser->userid;
                         $row[] = $OUTPUT->user_picture($user, array('courseid'=>$course->id));
-					}
+                    }
                     if (!$download) {
                         $row[] = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$scouser->userid.'&amp;course='.$course->id.'">'.fullname($scouser).'</a>';
                     } else {
@@ -400,17 +400,17 @@ class scorm_basic_report extends scorm_default_report {
                     } else {
                         if (!$download) {
                             $attemptstr = '<a href="'.$CFG->wwwroot.'/mod/scorm/report/userreport.php?id='.$cm->id.'&amp;user='.$scouser->userid.'&amp;attempt='.$scouser->attempt.'">'.$scouser->attempt.'</a>';
-							foreach ($scoes as $sco) {
-								if($sco->launch!='') {
-									$attemptstr .= ' <a target="_blank" href="'.$CFG->wwwroot.'/mod/scorm/player.php?attempt='.$scouser->attempt.'&a='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">(View)</a>';
-								}
-								if($userdata=scorm_get_tracks($sco->id,$scouser->userid,$scouser->attempt)) {
-									if($userdata->completed) {
-										$attemptstr .= ' <a href="'.$CFG->wwwroot.'/mod/scorm/reopen.php?attempt='.$scouser->attempt.'&scormid='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">(Reopen)</a>';
-									}
-								}
-							}
-							$row[] = $attemptstr;
+                            foreach ($scoes as $sco) {
+                                if($sco->launch!='') {
+                                    $attemptstr .= ' <a target="_blank" href="'.$CFG->wwwroot.'/mod/scorm/player.php?attempt='.$scouser->attempt.'&a='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">(View)</a>';
+                                }
+                                if($userdata=scorm_get_tracks($sco->id,$scouser->userid,$scouser->attempt)) {
+                                    if($userdata->completed) {
+                                        $attemptstr .= ' <a href="'.$CFG->wwwroot.'/mod/scorm/reopen.php?attempt='.$scouser->attempt.'&scormid='.$scorm->id.'&scoid='.$sco->id.'&userid='.$scouser->userid.'">(Reopen)</a>';
+                                    }
+                                }
+                            }
+                            $row[] = $attemptstr;
                         } else {
                             $row[] = $scouser->attempt;
                         }

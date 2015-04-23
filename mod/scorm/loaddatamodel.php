@@ -50,9 +50,9 @@ require_login($course, false, $cm);
 
 $userdata = new stdClass();
 if ($usertrack = scorm_get_tracks($scoid, $viewing_user->id, $attempt)) {
-	foreach ($usertrack as $key => $value) {
-		$userdata->$key = addslashes_js($value);
-	}
+    foreach ($usertrack as $key => $value) {
+        $userdata->$key = addslashes_js($value);
+    }
 } else {
     $userdata->status = '';
     $userdata->score_raw = '';

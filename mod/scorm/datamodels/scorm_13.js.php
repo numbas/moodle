@@ -941,7 +941,7 @@ function SCORMapi1_3() {
     }
 
 
-	function Commit (param) {
+    function Commit (param) {
         errorCode = "0";
         if (param == "") {
             if ((Initialized) && (!Terminated)) {
