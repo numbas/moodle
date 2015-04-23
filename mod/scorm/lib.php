@@ -1464,12 +1464,12 @@ function scorm_check_mode($scorm, &$newattempt, &$attempt, $userid, &$mode) {
 function mod_scorm_cm_info_dynamic(cm_info $cm) {
     global $DB;
 
-	// if the availability API has already made this unavailable, don't do anything
-	if(!$cm->available) {
-		return;
-	}
+    // if the availability API has already made this unavailable, don't do anything
+    if(!$cm->available) {
+        return;
+    }
 
-	// otherwise, check the open and close time and set availability appropriately
+    // otherwise, check the open and close time and set availability appropriately
 
     $sql = "SELECT timeopen, timeclose 
                 FROM {scorm} s
@@ -1477,12 +1477,12 @@ function mod_scorm_cm_info_dynamic(cm_info $cm) {
 
     if($scorm = $DB->get_record_sql($sql, array($cm->instance))) {
         $unavailable = $scorm->timeopen > time() || ($scorm->timeclose && $scorm->timeclose < time());
-		if($scorm->timeopen > time()) {
-			$message = get_string("notopenyet", "scorm", userdate($scorm->timeopen));
-		}
-		else if($scorm->timeclose < time()) {
-			$message = get_string("expired", "scorm", userdate($scorm->timeclose));
-		}
-		$cm->set_available(!$unavailable,$showavailability=1,$message);
-	}
+        if($scorm->timeopen > time()) {
+            $message = get_string("notopenyet", "scorm", userdate($scorm->timeopen));
+        }
+        else if($scorm->timeclose < time()) {
+            $message = get_string("expired", "scorm", userdate($scorm->timeclose));
+        }
+        $cm->set_available(!$unavailable,$showavailability=1,$message);
+    }
 }

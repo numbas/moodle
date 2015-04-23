@@ -55,7 +55,7 @@ if (!empty($id)) {
 $attempt = optional_param('attempt','',PARAM_INT);
 if(empty($attempt)) {
 // If new attempt is being triggered set normal mode and increment attempt number.
-	$attempt = scorm_get_last_attempt($scorm->id, $viewing_user->id);
+    $attempt = scorm_get_last_attempt($scorm->id, $viewing_user->id);
 }
 
 // Check mode is correct and set/validate mode/attempt/newattempt (uses pass by reference).
@@ -120,16 +120,16 @@ if ($scorm->timeclose != 0) {
         echo $OUTPUT->box(get_string("notopenyet", "scorm", userdate($scorm->timeopen)), "generalbox boxaligncenter");
         echo $OUTPUT->footer();
         die;
-	} else if ($timenow > $scorm->timeclose) {
-		/*
+    } else if ($timenow > $scorm->timeclose) {
+        /*
         echo $OUTPUT->header();
         echo $OUTPUT->box(get_string("expired", "scorm", userdate($scorm->timeclose)), "generalbox boxaligncenter");
         echo $OUTPUT->footer();
 
-		die;
-		 */
-		$mode = 'review';
-		$newattempt = 'off';
+        die;
+         */
+        $mode = 'review';
+        $newattempt = 'off';
     }
 }
 // TOC processing

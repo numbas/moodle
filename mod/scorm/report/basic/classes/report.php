@@ -410,17 +410,17 @@ class report extends \mod_scorm\report {
                             $url = new \moodle_url('/mod/scorm/report/userreport.php', array('id' => $cm->id,
                                     'user' => $scouser->userid, 'attempt' => $scouser->attempt));
                             $attempt_row = \html_writer::link($url, $scouser->attempt);
-							foreach ($scoes as $sco) {
-								if($sco->launch!='') {
-									$attempt_row .= \html_writer::link(new \moodle_url('/mod/scorm/player.php', array('attempt' => $scouser->attempt, 'a' => $scorm->id, 'scoid' => $sco->id, 'userid' => $scouser->userid)), '(View)');
-									break;
-								}
-								if($userdata=scorm_get_tracks($sco->id,$scouser->userid,$scouser->attempt)) {
+                            foreach ($scoes as $sco) {
+                                if($sco->launch!='') {
+                                    $attempt_row .= \html_writer::link(new \moodle_url('/mod/scorm/player.php', array('attempt' => $scouser->attempt, 'a' => $scorm->id, 'scoid' => $sco->id, 'userid' => $scouser->userid)), '(View)');
+                                    break;
+                                }
+                                if($userdata=scorm_get_tracks($sco->id,$scouser->userid,$scouser->attempt)) {
                                     if($userdata->completed) {
                                         $attempt_row .= \html_writer::link(new \moodle_url('/mod/scorm/reopen.php', array('attempt' => $scouser->attempt, 'scormid' => $scorm->id, 'scoid' => $sco->id, 'userid' => $scouser->userid)),'(Reopen)');
-									}
-								}
-							}
+                                    }
+                                }
+                            }
                             $row[] = $attempt_row;
                         } else {
                             $row[] = $scouser->attempt;
