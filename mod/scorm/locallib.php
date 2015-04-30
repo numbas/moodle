@@ -612,6 +612,7 @@ function scorm_format_interactions($trackdata) {
     $usertrack->total_time = '00:00:00';
     $usertrack->session_time = '00:00:00';
     $usertrack->timemodified = 0;
+    $usertrack->completed = false;
 
     foreach ($trackdata as $track) {
         $element = $track->element;
