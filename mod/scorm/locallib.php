@@ -2073,3 +2073,19 @@ function scorm_check_url($url) {
 
     return true;
 }
+
+function scorm_set_element($scormid,$scoid,$attempt,$userid,$element,$value) {
+    global $DB;
+
+    $elements = $DB->get_records('scorm_scoes_track',array('scormid'=>$scormid,'scoid'=>$scoid,'attempt'=>$attempt,'userid'=>$userid,'element'=>$element));
+
+    if($elements) {
+        foreach($elements as $element) {
+            $element->value = $value;
+            $DB->update_record('scorm_scoes_track',$element);
+        }
+        return true;
+    } else {
+        return false;
+    }
+}

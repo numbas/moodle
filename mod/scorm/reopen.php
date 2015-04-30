@@ -30,17 +30,9 @@ if(!$confirm) {
     echo $output->confirm_reopen_attempt($cm,$scormid,$scoid,$user,$attempt);
 } else {
 
-    $elements = $DB->get_records('scorm_scoes_track',array('scormid'=>$scormid,'scoid'=>$scoid,'attempt'=>$attempt,'userid'=>$userid,'element'=>'cmi.completion_status'));
+    $success = scorm_set_element($scormid,$scoid,$attempt,$userid,'cmi.completion_status','incomplete') &&
+               scorm_set_element($scormid,$scoid,$attempt,$userid,'cmi.exit','suspend');
 
-    if($elements) {
-        foreach($elements as $element) {
-            $element->value = 'incomplete';
-            $DB->update_record('scorm_scoes_track',$element);
-            $success = true;
-        }
-    } else {
-        $success = false;
-    }
     echo $output->reopen_attempt($cm,$success);
 }
 
