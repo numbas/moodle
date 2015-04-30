@@ -1197,7 +1197,7 @@ function get_scorm_default (&$userdata, $scorm, $scoid, $attempt, $mode) {
 
     if ($usertrack = scorm_get_tracks($scoid, $viewing_user->id, $attempt)) {
         foreach ($usertrack as $key => $value) {
-            $userdata->$key = addslashes_js($value);
+            $userdata->$key = $value;
         }
     } else {
         $userdata->status = '';
