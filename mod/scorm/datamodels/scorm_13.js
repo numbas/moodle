@@ -466,6 +466,8 @@ function SCORMapi1_3(def, cmiobj, cmiint, cmicommentsuser, cmicommentslms, scorm
         return "";
     }
 
+	var dirtyElements = {};
+
     function SetValue (element,value) {
         errorCode = "0";
         diagnostic = "";
