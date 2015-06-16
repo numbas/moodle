@@ -945,7 +945,7 @@ function SCORMapi1_3() {
         errorCode = "0";
         if (param == "") {
             if ((Initialized) && (!Terminated)) {
-                var AJAXResult = StoreData(cmi,false);
+                var AJAXResult = StoreData(cmi,true);
                 <?php
                     if (scorm_debugging($scorm)) {
                         echo 'LogAPICall("Commit", "AJAXResult", AJAXResult, 0);';
@@ -1212,8 +1212,10 @@ function SCORMapi1_3() {
         return timestring;
     }
 
+	var initial_total_time = cmi.total_time;
+
     function TotalTime() {
-        var total_time = AddTime(cmi.total_time, cmi.session_time);
+        var total_time = AddTime(initial_total_time, cmi.session_time);
         return '&'+underscore('cmi.total_time')+'='+encodeURIComponent(total_time);
     }
 
@@ -1231,18 +1233,12 @@ function SCORMapi1_3() {
             if (cmi.mode == 'normal') {
                 if (cmi.credit == 'credit') {
                     if ((cmi.completion_threshold != null) && (cmi.progress_measure != null)) {
-                        if (cmi.progress_measure >= cmi.completion_threshold) {
-                            cmi.completion_status = 'completed';
-                        } else {
-                            cmi.completion_status = 'incomplete';
-                        }
+						cmi.completion_status = cmi.progress_measure >= cmi.completion_threshold ? 'completed' : 'incomplete';
+						dirtyElements['cmi.completion_status'] = cmi.completion_status;
                     }
-                    if ((cmi.scaled_passed_score != null) && (cmi.score.scaled != '')) {
-                        if (cmi.score.scaled >= cmi.scaled_passed_score) {
-                            cmi.success_status = 'passed';
-                        } else {
-                            cmi.success_status = 'failed';
-                        }
+					if ((cmi.scaled_passed_score != null) && (cmi.score.scaled != '')) {
+						cmi.success_status = cmi.score.scaled >= cmi.scaled_passed_score ? 'passed' : 'failed';
+						dirtyElements['cmi.success_status'] = cmi.success_status;
                     }
                 }
             }
