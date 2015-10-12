@@ -280,9 +280,14 @@ if (!empty($forcejs)) {
     echo $OUTPUT->box(get_string("forcejavascriptmessage", "scorm"), "generalbox boxaligncenter forcejavascriptmessage");
 }
 
+/*
+ * Removed because checknet is not a great way of determining if the connection is OK.
+ * See https://moodle.org/mod/forum/discuss.php?d=261901
+ *
 // Add the checknet system to keep checking for a connection.
 $PAGE->requires->string_for_js('networkdropped', 'mod_scorm');
 $PAGE->requires->yui_module('moodle-core-checknet', 'M.core.checknet.init', array(array(
     'message' => array('networkdropped', 'mod_scorm'),
 )));
+ */
 echo $OUTPUT->footer();
