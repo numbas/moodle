@@ -343,6 +343,7 @@ $string['scormtype_help'] = 'This setting determines how the package is included
 * External AICC URL - this URL is the launch URL for a single AICC Activity.  A psuedo package will be constructed around this.';
 $string['scorm:viewreport'] = 'View reports';
 $string['scorm:viewscores'] = 'View scores';
+$string['scorm:reviewothersattempt'] = 'Review others\' attempts';
 $string['scrollbars'] = 'Allow the window to be scrolled';
 $string['selectall'] = 'Select all';
 $string['selectnone'] = 'Deselect all';

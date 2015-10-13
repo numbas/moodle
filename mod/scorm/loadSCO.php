@@ -47,6 +47,8 @@ if (!empty($id)) {
     print_error('missingparameter');
 }
 
+scorm_set_viewing_user($cm);
+
 $PAGE->set_url('/mod/scorm/loadSCO.php', array('scoid'=>$scoid, 'id'=>$cm->id));
 
 if (!isloggedin()) { // Prevent login page from being shown in iframe.

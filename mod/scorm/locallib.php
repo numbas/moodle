@@ -51,14 +51,23 @@ define('LASTATTEMPT', '3');
 define('TOCJSLINK', 1);
 define('TOCFULLURL', 2);
 
-if (is_siteadmin($USER) ) {
-    $userid = optional_param('userid', '', PARAM_INT);
-    if(!empty($userid)) {
-        $viewing_user = $DB->get_record('user', array('id'=>$userid));
-    }
-} 
-if(empty($viewing_user)) {
-    $viewing_user = $USER;
+
+function scorm_set_viewing_user($cm) {
+	global $viewing_user, $USER, $DB;
+
+	$context = context_module::instance($cm->id);
+
+	$userid = optional_param('userid', '', PARAM_INT);
+	if(!empty($userid)) {
+		if (has_capability('mod/scorm:reviewothersattempt',$context,$USER->id) ) {
+			$viewing_user = $DB->get_record('user', array('id'=>$userid));
+		} else {
+			trigger_error("Can't view others' attempts");
+		}
+	} 
+	if(empty($viewing_user)) {
+		$viewing_user = $USER;
+	}
 }
 
 /// Local Library of functions for module scorm

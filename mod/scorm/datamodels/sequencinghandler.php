@@ -36,6 +36,8 @@ if (!empty($id)) {
     print_error('missingparameter');
 }
 
+scorm_set_viewing_user($cm);
+
 $PAGE->set_url('/mod/scorm/datamodels/sequencinghandler.php',
     array('scoid'=>$scoid, 'attempt'=>$attempt, 'id'=>$cm->id, 'function' => $function, 'request' => $request));
 

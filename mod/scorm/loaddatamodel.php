@@ -44,6 +44,8 @@ if (!empty($id)) {
     print_error('missingparameter');
 }
 
+scorm_set_viewing_user($cm);
+
 $PAGE->set_url('/mod/scorm/loaddatamodel.php', array('scoid'=>$scoid, 'id'=>$cm->id));
 
 require_login($course, false, $cm);

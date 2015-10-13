@@ -52,6 +52,8 @@ if (!empty($id)) {
     print_error('missingparameter');
 }
 
+scorm_set_viewing_user($cm);
+
 $attempt = optional_param('attempt','',PARAM_INT);
 if(empty($attempt)) {
 // If new attempt is being triggered set normal mode and increment attempt number.
