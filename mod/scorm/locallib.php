@@ -530,7 +530,7 @@ function scorm_insert_track($userid, $scormid, $scoid, $attempt, $element, $valu
     }
     if ($track) {
         if ($element != 'x.start.time' ) { // Don't update x.start.time - keep the original value.
-            if ($track->value != $value) {
+			if ($track->value !== $value) {
                 $track->value = $value;
                 $track->timemodified = time();
                 $DB->update_record('scorm_scoes_track', $track);
